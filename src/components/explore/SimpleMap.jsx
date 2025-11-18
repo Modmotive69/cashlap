@@ -1,5 +1,4 @@
-
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -137,8 +136,12 @@ export default function SimpleMap({ campaigns, userLocation, onMarkerClick }) {
     const fetchMapConfig = async () => {
       setError('');
       try {
+        console.log('🗺️ Fetching Mapbox configuration...');
         const response = await getMapboxConfig();
-        if (response?.data?.accessToken) {
+        console.log('📦 Mapbox config response:', response);
+        
+        if (response?.data?.accessToken && response?.data?.styleUrl) {
+          console.log('✅ Mapbox token received, configuring tiles...');
           setTileConfig({
             url: `https://api.mapbox.com/styles/v1/${response.data.styleUrl}/tiles/{z}/{x}/{y}?access_token=${response.data.accessToken}`,
             attribution: '&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a>',
@@ -146,11 +149,13 @@ export default function SimpleMap({ campaigns, userLocation, onMarkerClick }) {
             zoomOffset: -1,
             maxZoom: 18,
           });
+          console.log('✅ Mapbox tiles configured successfully');
         } else {
-          throw new Error("Mapbox token not available from server.");
+          console.error('❌ Invalid Mapbox response:', response);
+          throw new Error("Mapbox configuration invalid");
         }
       } catch (e) {
-        console.warn("Falling back to OpenStreetMap. Reason:", e.message);
+        console.error("❌ Mapbox error:", e);
         setError("Using backup map (Mapbox unavailable)");
         setTileConfig({
           url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",

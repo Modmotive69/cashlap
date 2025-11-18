@@ -20,12 +20,14 @@ Deno.serve(async (req) => {
     const mapboxAccessToken = Deno.env.get('MAPBOX_ACCESS_TOKEN');
     let mapboxStyleUrl = Deno.env.get('MAPBOX_STYLE_URL') || 'mapbox/streets-v12';
 
-    if (!mapboxAccessToken) {
-      console.error('MAPBOX_ACCESS_TOKEN is not set in environment variables.');
+    if (!mapboxAccessToken || mapboxAccessToken.trim() === '') {
+      console.error('MAPBOX_ACCESS_TOKEN is not set or empty.');
       return new Response(JSON.stringify({ 
-        error: 'Mapbox configuration is missing on the server.' 
+        error: 'Mapbox token missing',
+        accessToken: null,
+        styleUrl: null
       }), {
-        status: 500,
+        status: 200, // Return 200 so frontend can handle gracefully
         headers: corsHeaders
       });
     }
@@ -35,7 +37,7 @@ Deno.serve(async (req) => {
       mapboxStyleUrl = mapboxStyleUrl.replace('mapbox://styles/', '');
     }
 
-    console.log(`Mapbox config: styleUrl=${mapboxStyleUrl}, token=${mapboxAccessToken ? 'present' : 'missing'}`);
+    console.log(`Mapbox config: styleUrl=${mapboxStyleUrl}, token present: ${!!mapboxAccessToken}`);
 
     return new Response(JSON.stringify({ 
       accessToken: mapboxAccessToken,
@@ -48,9 +50,11 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Error in getMapboxConfig:', error);
     return new Response(JSON.stringify({ 
-      error: 'An unexpected error occurred while fetching map configuration.'
+      error: error.message || 'Configuration error',
+      accessToken: null,
+      styleUrl: null
     }), {
-      status: 500,
+      status: 200, // Return 200 for graceful degradation
       headers: corsHeaders
     });
   }

@@ -138,36 +138,37 @@ export default function SimpleMap({ campaigns, userLocation, onMarkerClick }) {
       try {
         console.log('🗺️ Fetching Mapbox configuration...');
         const response = await getMapboxConfig();
-        console.log('📦 Full response object:', response);
-        console.log('📦 Response.data:', response?.data);
-        console.log('📦 AccessToken present:', !!response?.data?.accessToken);
-        console.log('📦 StyleUrl:', response?.data?.styleUrl);
+        console.log('📦 Raw response:', response);
         
-        const accessToken = response?.data?.accessToken;
-        const styleUrl = response?.data?.styleUrl;
+        // Handle both direct data and response.data patterns
+        const data = response?.data || response;
+        console.log('📦 Parsed data:', data);
         
-        if (accessToken && styleUrl) {
-          console.log('✅ Mapbox credentials validated, building tile URL...');
-          const tileUrl = `https://api.mapbox.com/styles/v1/${styleUrl}/tiles/{z}/{x}/{y}?access_token=${accessToken}`;
-          console.log('✅ Tile URL:', tileUrl);
-          
-          setTileConfig({
-            url: tileUrl,
-            attribution: '&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a>',
-            tileSize: 512,
-            zoomOffset: -1,
-            maxZoom: 18,
-          });
-          console.log('✅ Mapbox tiles configured successfully');
-        } else {
-          console.error('❌ Missing Mapbox credentials in response');
-          console.error('❌ Response data:', response?.data);
-          throw new Error("Mapbox configuration invalid - missing credentials");
+        const accessToken = data?.accessToken;
+        const styleUrl = data?.styleUrl;
+        
+        console.log('📦 AccessToken present:', !!accessToken);
+        console.log('📦 StyleUrl:', styleUrl);
+        
+        if (!accessToken || !styleUrl) {
+          console.error('❌ Missing credentials - Token:', !!accessToken, 'Style:', !!styleUrl);
+          throw new Error("Mapbox credentials missing");
         }
+        
+        const tileUrl = `https://api.mapbox.com/styles/v1/${styleUrl}/tiles/{z}/{x}/{y}?access_token=${accessToken}`;
+        console.log('✅ Mapbox tile URL configured:', tileUrl.substring(0, 80) + '...');
+        
+        setTileConfig({
+          url: tileUrl,
+          attribution: '&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a>',
+          tileSize: 512,
+          zoomOffset: -1,
+          maxZoom: 18,
+        });
+        
       } catch (e) {
-        console.error("❌ Mapbox configuration failed:", e);
-        console.error("❌ Error details:", e.message, e.response);
-        setError("Using backup map (Mapbox unavailable)");
+        console.error("❌ Mapbox error:", e);
+        setError("Mapbox unavailable - using OpenStreetMap");
         setTileConfig({
           url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
           attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',

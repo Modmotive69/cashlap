@@ -133,53 +133,14 @@ export default function SimpleMap({ campaigns, userLocation, onMarkerClick }) {
   const [mapKey, setMapKey] = useState(Date.now());
 
   useEffect(() => {
-    const fetchMapConfig = async () => {
-      setError('');
-      try {
-        console.log('🗺️ Fetching Mapbox configuration...');
-        const response = await getMapboxConfig();
-        console.log('📦 Raw response:', response);
-        
-        // Handle both direct data and response.data patterns
-        const data = response?.data || response;
-        console.log('📦 Parsed data:', data);
-        
-        const accessToken = data?.accessToken;
-        const styleUrl = data?.styleUrl;
-        
-        console.log('📦 AccessToken present:', !!accessToken);
-        console.log('📦 StyleUrl:', styleUrl);
-        
-        if (!accessToken || !styleUrl) {
-          console.error('❌ Missing credentials - Token:', !!accessToken, 'Style:', !!styleUrl);
-          throw new Error("Mapbox credentials missing");
-        }
-        
-        const tileUrl = `https://api.mapbox.com/styles/v1/${styleUrl}/tiles/{z}/{x}/{y}?access_token=${accessToken}`;
-        console.log('✅ Mapbox tile URL configured:', tileUrl.substring(0, 80) + '...');
-        
-        setTileConfig({
-          url: tileUrl,
-          attribution: '&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a>',
-          tileSize: 512,
-          zoomOffset: -1,
-          maxZoom: 18,
-        });
-        
-      } catch (e) {
-        console.error("❌ Mapbox error:", e);
-        setError("Mapbox unavailable - using OpenStreetMap");
-        setTileConfig({
-          url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-          maxZoom: 19,
-        });
-      } finally {
-        setMapKey(Date.now());
-      }
-    };
-
-    fetchMapConfig();
+    // Using OpenStreetMap as default since backend functions are blocked
+    console.log('🗺️ Initializing map with OpenStreetMap');
+    setTileConfig({
+      url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19,
+    });
+    setMapKey(Date.now());
   }, []);
 
   const createCashieIcon = () => {

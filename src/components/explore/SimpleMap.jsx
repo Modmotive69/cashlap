@@ -138,12 +138,21 @@ export default function SimpleMap({ campaigns, userLocation, onMarkerClick }) {
       try {
         console.log('🗺️ Fetching Mapbox configuration...');
         const response = await getMapboxConfig();
-        console.log('📦 Mapbox config response:', response);
+        console.log('📦 Full response object:', response);
+        console.log('📦 Response.data:', response?.data);
+        console.log('📦 AccessToken present:', !!response?.data?.accessToken);
+        console.log('📦 StyleUrl:', response?.data?.styleUrl);
         
-        if (response?.data?.accessToken && response?.data?.styleUrl) {
-          console.log('✅ Mapbox token received, configuring tiles...');
+        const accessToken = response?.data?.accessToken;
+        const styleUrl = response?.data?.styleUrl;
+        
+        if (accessToken && styleUrl) {
+          console.log('✅ Mapbox credentials validated, building tile URL...');
+          const tileUrl = `https://api.mapbox.com/styles/v1/${styleUrl}/tiles/{z}/{x}/{y}?access_token=${accessToken}`;
+          console.log('✅ Tile URL:', tileUrl);
+          
           setTileConfig({
-            url: `https://api.mapbox.com/styles/v1/${response.data.styleUrl}/tiles/{z}/{x}/{y}?access_token=${response.data.accessToken}`,
+            url: tileUrl,
             attribution: '&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a>',
             tileSize: 512,
             zoomOffset: -1,
@@ -151,11 +160,13 @@ export default function SimpleMap({ campaigns, userLocation, onMarkerClick }) {
           });
           console.log('✅ Mapbox tiles configured successfully');
         } else {
-          console.error('❌ Invalid Mapbox response:', response);
-          throw new Error("Mapbox configuration invalid");
+          console.error('❌ Missing Mapbox credentials in response');
+          console.error('❌ Response data:', response?.data);
+          throw new Error("Mapbox configuration invalid - missing credentials");
         }
       } catch (e) {
-        console.error("❌ Mapbox error:", e);
+        console.error("❌ Mapbox configuration failed:", e);
+        console.error("❌ Error details:", e.message, e.response);
         setError("Using backup map (Mapbox unavailable)");
         setTileConfig({
           url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",

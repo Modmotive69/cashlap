@@ -6,27 +6,35 @@ Deno.serve(async (req) => {
     'Content-Type': 'application/json',
   };
 
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders });
   }
 
   try {
-    const mapboxAccessToken = Deno.env.get('MAPBOX_ACCESS_TOKEN');
-    const mapboxStyleUrl = Deno.env.get('MAPBOX_STYLE_URL') || 'mapbox/streets-v12';
-
-    console.log('✅ Mapbox token retrieved:', mapboxAccessToken ? `${mapboxAccessToken.substring(0, 10)}...` : 'MISSING');
-    console.log('✅ Mapbox style URL:', mapboxStyleUrl);
-
-    if (!mapboxAccessToken) {
-      throw new Error('MAPBOX_ACCESS_TOKEN environment variable is not set');
+    console.log('🔍 getMapboxConfig called');
+    
+    let mapboxAccessToken;
+    let mapboxStyleUrl;
+    
+    try {
+      mapboxAccessToken = Deno.env.get('MAPBOX_ACCESS_TOKEN');
+      mapboxStyleUrl = Deno.env.get('MAPBOX_STYLE_URL');
+    } catch (envError) {
+      console.error('❌ Error accessing env vars:', envError);
+      throw new Error(`Failed to access environment: ${envError.message}`);
     }
 
-    // Clean up style URL format
-    let cleanStyleUrl = mapboxStyleUrl;
-    if (cleanStyleUrl.startsWith('mapbox://styles/')) {
-      cleanStyleUrl = cleanStyleUrl.replace('mapbox://styles/', '');
+    console.log('Token exists:', !!mapboxAccessToken);
+    console.log('Style URL:', mapboxStyleUrl || 'not set');
+
+    if (!mapboxAccessToken || mapboxAccessToken.trim() === '') {
+      throw new Error('MAPBOX_ACCESS_TOKEN is not configured');
     }
+
+    const cleanStyleUrl = (mapboxStyleUrl || 'mapbox/streets-v12')
+      .replace('mapbox://styles/', '');
+
+    console.log('✅ Returning config with style:', cleanStyleUrl);
 
     return new Response(
       JSON.stringify({ 
@@ -37,10 +45,11 @@ Deno.serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('❌ Mapbox config error:', error.message);
+    console.error('❌ Function error:', error);
     return new Response(
       JSON.stringify({ 
-        error: error.message
+        error: error.message || 'Unknown error',
+        type: error.name || 'Error'
       }), 
       { status: 500, headers: corsHeaders }
     );

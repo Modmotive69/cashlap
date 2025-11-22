@@ -1,5 +1,5 @@
 Deno.serve(async (req) => {
-  const corsHeaders = {
+  const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
@@ -7,26 +7,18 @@ Deno.serve(async (req) => {
   };
 
   if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: corsHeaders });
+    return new Response(null, { status: 204, headers });
   }
 
-  const token = Deno.env.get('MAPBOX_ACCESS_TOKEN');
-  const style = Deno.env.get('MAPBOX_STYLE_URL') || 'mapbox/streets-v12';
+  const accessToken = Deno.env.get('MAPBOX_ACCESS_TOKEN');
+  const styleUrl = (Deno.env.get('MAPBOX_STYLE_URL') || 'mapbox/streets-v12').replace('mapbox://styles/', '');
 
-  if (!token) {
-    return new Response(
-      JSON.stringify({ error: 'Token not found' }), 
-      { status: 500, headers: corsHeaders }
-    );
+  if (!accessToken) {
+    return new Response(JSON.stringify({ error: 'No token' }), { status: 500, headers });
   }
-
-  const cleanStyle = style.replace('mapbox://styles/', '');
 
   return new Response(
-    JSON.stringify({ 
-      accessToken: token,
-      styleUrl: cleanStyle
-    }), 
-    { status: 200, headers: corsHeaders }
+    JSON.stringify({ accessToken, styleUrl }), 
+    { status: 200, headers }
   );
 });

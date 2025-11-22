@@ -1,6 +1,5 @@
-
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { User, Campaign, Business, Mission } from "@/entities/all";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { User, Campaign, Business, Notification, Mission } from "@/entities/all";
 import { UploadFile } from "@/integrations/Core";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,7 +40,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createPageUrl } from "@/utils";
-import { sanitize } from "@/components/utils/sanitizer";
+import { sanitize, sanitizeObject } from "@/components/utils/sanitizer";
+import QRCodeGenerator from "@/components/qr/QRCodeGenerator";
+import CampaignAnalyticsDetail from "@/components/analytics/CampaignAnalyticsDetail";
 import { geocodeAddress } from "@/functions/geocodeAddress";
 import { increaseCampaignBudget } from "@/functions/increaseCampaignBudget"; // NEW IMPORT
 
@@ -541,14 +542,14 @@ function CampaignForm({ businessId, onCampaignUpdated, existingCampaign, onCance
             type="submit"
             onClick={(e) => handleSubmit(e, false)}
             disabled={uploadingImage || isSubmitting}
-            className="flex-1 bg-[var(--cashlap-blue)] hover:opacity-90 text-white font-bold"
+            className="flex-1 bg-[var(--cashlap-green)] hover:opacity-90 text-white font-bold"
           >
             {isSubmitting ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
               <>
                 <Check className="w-5 h-5 mr-2" />
-                {isNew || isDraft ? 'Save and Activate' : 'Save Changes'}
+                {isNew || isDraft ? 'Save & Go Live' : 'Save Changes'}
               </>
             )}
           </Button>
@@ -566,7 +567,7 @@ function CampaignForm({ businessId, onCampaignUpdated, existingCampaign, onCance
               ) : (
                 <>
                   <FileText className="w-5 h-5 mr-2" />
-                  {isNew ? 'Save as Draft' : 'Save Draft'}
+                  Save as Draft
                 </>
               )}
             </Button>
@@ -577,6 +578,11 @@ function CampaignForm({ businessId, onCampaignUpdated, existingCampaign, onCance
             Cancel
           </Button>
         </div>
+        {(isNew || isDraft) && (
+          <p className="text-xs text-gray-500 text-center -mt-2">
+            💡 Campaigns must be live to appear on the Player Explore page
+          </p>
+        )}
       </form>
     </motion.div>
   );

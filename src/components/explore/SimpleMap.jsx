@@ -133,14 +133,41 @@ export default function SimpleMap({ campaigns, userLocation, onMarkerClick }) {
   const [mapKey, setMapKey] = useState(Date.now());
 
   useEffect(() => {
-    // Using OpenStreetMap as default since backend functions are blocked
-    console.log('🗺️ Initializing map with OpenStreetMap');
-    setTileConfig({
-      url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      maxZoom: 19,
-    });
-    setMapKey(Date.now());
+    const fetchMapConfig = async () => {
+      try {
+        console.log('🗺️ Fetching Mapbox configuration...');
+        const response = await getMapboxConfig();
+        const data = response?.data || response;
+        
+        if (!data?.accessToken || !data?.styleUrl) {
+          throw new Error("Mapbox credentials missing");
+        }
+        
+        const tileUrl = `https://api.mapbox.com/styles/v1/${data.styleUrl}/tiles/{z}/{x}/{y}?access_token=${data.accessToken}`;
+        console.log('✅ Mapbox configured successfully');
+        
+        setTileConfig({
+          url: tileUrl,
+          attribution: '&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a>',
+          tileSize: 512,
+          zoomOffset: -1,
+          maxZoom: 18,
+        });
+        
+      } catch (e) {
+        console.error("❌ Mapbox error:", e);
+        setError("Mapbox unavailable - using OpenStreetMap");
+        setTileConfig({
+          url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          maxZoom: 19,
+        });
+      } finally {
+        setMapKey(Date.now());
+      }
+    };
+
+    fetchMapConfig();
   }, []);
 
   const createCashieIcon = () => {

@@ -11,46 +11,29 @@ Deno.serve(async (req) => {
   }
 
   try {
-    console.log('🔍 getMapboxConfig called');
-    
-    let mapboxAccessToken;
-    let mapboxStyleUrl;
-    
-    try {
-      mapboxAccessToken = Deno.env.get('MAPBOX_ACCESS_TOKEN');
-      mapboxStyleUrl = Deno.env.get('MAPBOX_STYLE_URL');
-    } catch (envError) {
-      console.error('❌ Error accessing env vars:', envError);
-      throw new Error(`Failed to access environment: ${envError.message}`);
+    const token = Deno.env.get('MAPBOX_ACCESS_TOKEN') || '';
+    const style = Deno.env.get('MAPBOX_STYLE_URL') || 'mapbox/streets-v12';
+
+    if (!token) {
+      return new Response(
+        JSON.stringify({ error: 'Mapbox token not configured' }), 
+        { status: 500, headers: corsHeaders }
+      );
     }
 
-    console.log('Token exists:', !!mapboxAccessToken);
-    console.log('Style URL:', mapboxStyleUrl || 'not set');
-
-    if (!mapboxAccessToken || mapboxAccessToken.trim() === '') {
-      throw new Error('MAPBOX_ACCESS_TOKEN is not configured');
-    }
-
-    const cleanStyleUrl = (mapboxStyleUrl || 'mapbox/streets-v12')
-      .replace('mapbox://styles/', '');
-
-    console.log('✅ Returning config with style:', cleanStyleUrl);
+    const cleanStyle = style.replace('mapbox://styles/', '');
 
     return new Response(
       JSON.stringify({ 
-        accessToken: mapboxAccessToken,
-        styleUrl: cleanStyleUrl
+        accessToken: token,
+        styleUrl: cleanStyle
       }), 
       { status: 200, headers: corsHeaders }
     );
 
   } catch (error) {
-    console.error('❌ Function error:', error);
     return new Response(
-      JSON.stringify({ 
-        error: error.message || 'Unknown error',
-        type: error.name || 'Error'
-      }), 
+      JSON.stringify({ error: error.message }), 
       { status: 500, headers: corsHeaders }
     );
   }

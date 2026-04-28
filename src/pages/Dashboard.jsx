@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { User, Mission, Business, Campaign } from "@/entities/all";
 import { Link } from "react-router-dom";
@@ -21,8 +20,8 @@ import {
   User as UserIcon,
   Loader2,
   RefreshCw,
-  AlertTriangle, // For influencer rank
-  Zap,   // For multiplier
+  AlertTriangle,
+  Zap,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -46,6 +45,7 @@ const RANK_ORDER = ['rookie', 'trendsetter', 'vibe_curator', 'icon', 'legend'];
 function DashboardContent() {
   const [user, setUser] = useState(null);
   const [missions, setMissions] = useState([]);
+  const [missionBusinesses, setMissionBusinesses] = useState({});
   const [business, setBusiness] = useState(null);
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -93,6 +93,15 @@ function DashboardContent() {
         try {
           const userMissions = await Mission.filter({ user_id: currentUser.id }, '-created_date', 10);
           setMissions(userMissions);
+
+          // Load business names for missions
+          const bizIds = [...new Set(userMissions.map(m => m.business_id).filter(Boolean))];
+          if (bizIds.length > 0) {
+            const bizList = await Business.filter({ id: { $in: bizIds } });
+            const bizMap = {};
+            bizList.forEach(b => { bizMap[b.id] = b.name; });
+            setMissionBusinesses(bizMap);
+          }
         } catch (err) {
           console.warn('Failed to load missions:', err);
           setMissions([]);
@@ -593,7 +602,7 @@ function DashboardContent() {
                       <div className="flex-1">
                         <h3 className="font-semibold text-gray-900">{mission.title}</h3>
                         <p className="text-gray-700 mt-1">
-                          {mission.business_id ? `Business ID: ${mission.business_id}` : 'Business'}
+                          {missionBusinesses[mission.business_id] || 'Business'}
                         </p>
                         <div className="flex items-center justify-between mt-2">
                           <Badge variant="secondary" className="bg-[var(--cashlap-yellow)]/20 text-yellow-800">
@@ -636,7 +645,7 @@ function DashboardContent() {
                     <div className="flex-1 min-w-0 overflow-hidden">
                       <p className="font-medium text-gray-900 truncate">{mission.title}</p>
                       <p className="text-gray-700 text-sm truncate">
-                         {mission.business_id ? `Business ID: ${mission.business_id}` : 'Business'}
+                        {missionBusinesses[mission.business_id] || 'Business'}
                       </p>
                     </div>
                     <div className="text-right flex-shrink-0">

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Campaign, Mission } from "@/entities/all";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -343,7 +342,7 @@ function SubmissionReviewContent() {
                           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 mt-2">
                             <div className="flex items-center gap-1">
                               <UserIcon className="w-4 h-4" />
-                              <span>Player ID: {mission.user_id}</span>
+                              <span>Player: {mission.created_by || mission.user_id}</span>
                             </div>
                             <div className="flex items-center gap-1">
                               <Calendar className="w-4 h-4" />
@@ -400,6 +399,18 @@ function SubmissionReviewContent() {
                           </div>
                         )}
                         
+                        {/* Screenshot */}
+                        {mission.submission_screenshot_url && (
+                          <div className="mb-3">
+                            <p className="text-sm font-medium text-gray-700 mb-1">Screenshot:</p>
+                            <img
+                              src={mission.submission_screenshot_url}
+                              alt="Submission screenshot"
+                              className="rounded-lg max-h-64 object-contain border border-gray-200"
+                            />
+                          </div>
+                        )}
+
                         {/* Player Notes */}
                         {mission.submission_notes && (
                           <div>

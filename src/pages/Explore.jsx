@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Business, User, Campaign } from "@/entities/all";
 import { Button } from "@/components/ui/button";
@@ -16,7 +15,6 @@ import {
   QrCode,
   AlertTriangle,
   Filter,
-  Globe, // Added Globe icon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -346,12 +344,7 @@ function ExploreContent() {
                 Map
               </button>
             </div>
-            <a href={createPageUrl("ARMap")}>
-              <Button variant="outline" size="sm" className="flex items-center gap-2 bg-[var(--cashlap-green)] border-[var(--cashlap-green)] text-white hover:bg-[#32CD32]/90 hover:border-[#32CD32]/90">
-                <Globe className="w-4 h-4" />
-                AR Map
-              </Button>
-            </a>
+
           </div>
         </div>
 

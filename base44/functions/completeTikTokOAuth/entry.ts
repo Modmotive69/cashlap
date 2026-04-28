@@ -65,6 +65,8 @@ Deno.serve(async (req) => {
         // Try multiple approaches to get the follower count
         let followerCount = 0;
         let displayName = '';
+        let avatarUrl = '';
+        let bioDescription = '';
 
         // Method 1: Try the POST method with fields in body
         console.log('[completeTikTokOAuth] Method 1: POST with fields in body');
@@ -88,6 +90,8 @@ Deno.serve(async (req) => {
                 const userInfo = userInfoData1.data.user;
                 followerCount = userInfo.follower_count || 0;
                 displayName = userInfo.display_name || '';
+                avatarUrl = userInfo.avatar_url || '';
+                bioDescription = userInfo.bio_description || '';
                 console.log('[completeTikTokOAuth] Method 1 SUCCESS - Followers:', followerCount, 'Name:', displayName);
             }
         } catch (error1) {
@@ -115,6 +119,8 @@ Deno.serve(async (req) => {
                     const userInfo = userInfoData2.data.user;
                     followerCount = userInfo.follower_count || 0;
                     displayName = userInfo.display_name || '';
+                    avatarUrl = userInfo.avatar_url || '';
+                    bioDescription = userInfo.bio_description || '';
                     console.log('[completeTikTokOAuth] Method 2 SUCCESS - Followers:', followerCount, 'Name:', displayName);
                 }
             } catch (error2) {
@@ -186,7 +192,10 @@ Deno.serve(async (req) => {
             tiktok_open_id: open_id,
             tiktok_union_id: union_id,
             tiktok_username: displayName,
+            tiktok_avatar_url: avatarUrl,
+            tiktok_bio: bioDescription,
             tiktok_followers: tiktokFollowers,
+            tiktok_followers_previous: 0,
             instagram_followers: instagramFollowers,
             total_followers: totalFollowers,
             influencer_rank: influencerRank,

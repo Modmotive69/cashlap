@@ -1,0 +1,226 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "display_name": {
+      "type": "string",
+      "description": "The user's preferred display name in the app."
+    },
+    "business_id": {
+      "type": "string",
+      "description": "Unique business ID assigned when user creates business account"
+    },
+    "player_id": {
+      "type": "string",
+      "description": "Unique player ID assigned when user creates player account"
+    },
+    "total_earnings": {
+      "type": "number",
+      "default": 0,
+      "description": "Total earnings from missions"
+    },
+    "business_balance": {
+      "type": "number",
+      "default": 0,
+      "description": "Business account balance for paying campaigns"
+    },
+    "level": {
+      "type": "number",
+      "default": 1,
+      "description": "User level"
+    },
+    "experience_points": {
+      "type": "number",
+      "default": 0,
+      "description": "Experience points"
+    },
+    "missions_completed": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of missions completed"
+    },
+    "favorite_categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "User's favorite business categories"
+    },
+    "profile_image_url": {
+      "type": "string",
+      "description": "User profile image URL"
+    },
+    "bio": {
+      "type": "string",
+      "description": "User bio"
+    },
+    "social_handles": {
+      "type": "object",
+      "properties": {
+        "instagram": {
+          "type": "string"
+        },
+        "twitter": {
+          "type": "string"
+        },
+        "facebook": {
+          "type": "string"
+        },
+        "tiktok": {
+          "type": "string"
+        }
+      },
+      "default": {},
+      "description": "Social media handles (for display only)"
+    },
+    "engagement_preferences": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Engagement preferences"
+    },
+    "account_type": {
+      "type": "string",
+      "enum": [
+        "player",
+        "business"
+      ],
+      "default": "player"
+    },
+    "onboarding_completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "business_name": {
+      "type": "string",
+      "description": "Business name for business accounts"
+    },
+    "business_description": {
+      "type": "string",
+      "description": "Business description for business accounts"
+    },
+    "business_website": {
+      "type": "string",
+      "description": "Business website for business accounts"
+    },
+    "business_address": {
+      "type": "string",
+      "description": "Business address for business accounts"
+    },
+    "average_daily_traffic": {
+      "type": "number",
+      "default": 0,
+      "description": "Average daily traffic for business accounts"
+    },
+    "referral_code": {
+      "type": "string",
+      "description": "User's referral code"
+    },
+    "referred_by": {
+      "type": "string",
+      "description": "Referral code that referred this user"
+    },
+    "referral_rewards_earned": {
+      "type": "number",
+      "default": 0,
+      "description": "Total referral rewards earned"
+    },
+    "total_referrals": {
+      "type": "number",
+      "default": 0,
+      "description": "Total number of successful referrals"
+    },
+    "stripe_player_account_id": {
+      "type": "string",
+      "description": "Stripe Connect account ID for player role (receiving payouts)"
+    },
+    "stripe_business_customer_id": {
+      "type": "string",
+      "description": "Stripe Customer ID for business role (making payments)"
+    },
+    "player_payout_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether player can receive payouts (Connect account verified)"
+    },
+    "instagram_followers": {
+      "type": "number",
+      "default": 0,
+      "description": "Current Instagram follower count"
+    },
+    "tiktok_followers": {
+      "type": "number",
+      "default": 0,
+      "description": "Current TikTok follower count"
+    },
+    "tiktok_followers_previous": {
+      "type": "number",
+      "default": 0,
+      "description": "Previous TikTok follower count before last sync for growth tracking"
+    },
+    "influencer_rank": {
+      "type": "string",
+      "enum": [
+        "rookie",
+        "trendsetter",
+        "vibe_curator",
+        "icon",
+        "legend"
+      ],
+      "default": "rookie",
+      "description": "Current influencer ranking tier"
+    },
+    "influencer_multiplier": {
+      "type": "number",
+      "default": 1,
+      "description": "Current reward multiplier based on influencer rank"
+    },
+    "followers_last_updated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When follower counts were last updated"
+    },
+    "total_followers": {
+      "type": "number",
+      "default": 0,
+      "description": "Combined follower count across all platforms"
+    },
+    "tiktok_oauth_state": {
+      "type": "string"
+    },
+    "tiktok_access_token": {
+      "type": "string"
+    },
+    "tiktok_refresh_token": {
+      "type": "string"
+    },
+    "tiktok_token_expires": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "tiktok_username": {
+      "type": "string",
+      "description": "TikTok display name"
+    },
+    "tiktok_avatar_url": {
+      "type": "string",
+      "description": "TikTok profile avatar URL"
+    },
+    "tiktok_bio": {
+      "type": "string",
+      "description": "TikTok profile bio description"
+    },
+    "tiktok_open_id": {
+      "type": "string",
+      "description": "The user's unique identifier within a single TikTok application."
+    },
+    "tiktok_union_id": {
+      "type": "string",
+      "description": "The user's unique identifier across all TikTok applications from the same developer."
+    }
+  },
+  "required": []
+}

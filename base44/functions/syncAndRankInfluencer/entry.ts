@@ -17,10 +17,10 @@ function calculateInfluencerRank(totalFollowers) {
   return { rank: 'rookie', ...INFLUENCER_TIERS.rookie };
 }
 
-async function getTikTokFollowers(user) {
+async function getTikTokProfile(user) {
   if (!user.tiktok_access_token) {
     console.log('No TikTok access token found for user');
-    return user.tiktok_followers || 0;
+    return { followerCount: user.tiktok_followers || 0, displayName: user.tiktok_username || '', avatarUrl: user.tiktok_avatar_url || '', bio: user.tiktok_bio || '' };
   }
 
   try {
@@ -30,13 +30,11 @@ async function getTikTokFollowers(user) {
     
     if (tokenExpiry <= now) {
       console.log('TikTok token expired, attempting to refresh...');
-      // Try to refresh the token
       const refreshResult = await refreshTikTokToken(user);
       if (!refreshResult.success) {
         console.error('Failed to refresh TikTok token:', refreshResult.error);
-        return user.tiktok_followers || 0;
+        return { followerCount: user.tiktok_followers || 0, displayName: user.tiktok_username || '', avatarUrl: user.tiktok_avatar_url || '', bio: user.tiktok_bio || '' };
       }
-      // Use the new token
       user.tiktok_access_token = refreshResult.access_token;
     }
 
@@ -47,7 +45,7 @@ async function getTikTokFollowers(user) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        fields: ['follower_count']
+        fields: ['follower_count', 'display_name', 'avatar_url', 'bio_description']
       })
     });
 
@@ -61,14 +59,18 @@ async function getTikTokFollowers(user) {
       throw new Error(`TikTok API Error: ${data.error.message}`);
     }
 
-    const followerCount = data.data?.user?.follower_count || 0;
-    console.log(`Successfully fetched ${followerCount} TikTok followers for user ${user.id}`);
-    return followerCount;
+    const userInfo = data.data?.user || {};
+    console.log(`Successfully fetched TikTok profile for user ${user.id}: ${userInfo.follower_count} followers`);
+    return {
+      followerCount: userInfo.follower_count || 0,
+      displayName: userInfo.display_name || user.tiktok_username || '',
+      avatarUrl: userInfo.avatar_url || user.tiktok_avatar_url || '',
+      bio: userInfo.bio_description || user.tiktok_bio || ''
+    };
 
   } catch (error) {
-    console.error(`Failed to fetch TikTok followers for user ${user.id}:`, error.message);
-    // Return cached count if API fails
-    return user.tiktok_followers || 0;
+    console.error(`Failed to fetch TikTok profile for user ${user.id}:`, error.message);
+    return { followerCount: user.tiktok_followers || 0, displayName: user.tiktok_username || '', avatarUrl: user.tiktok_avatar_url || '', bio: user.tiktok_bio || '' };
   }
 }
 
@@ -122,20 +124,24 @@ Deno.serve(async (req) => {
 
     const user = await base44.auth.me();
     
-    // Get current follower counts
-    const tiktokFollowers = await getTikTokFollowers(user);
+    // Get current TikTok profile (followers + display data)
+    const tiktokProfile = await getTikTokProfile(user);
+    const tiktokFollowers = tiktokProfile.followerCount;
+    const previousTikTokFollowers = user.tiktok_followers || 0;
     
-    // Placeholder for Instagram (you can implement Instagram API later)
     const instagramFollowers = user.instagram_followers || 0;
-
     const totalFollowers = tiktokFollowers + instagramFollowers;
     const rankData = calculateInfluencerRank(totalFollowers);
 
-    console.log(`[syncAndRankInfluencer] User ${user.id}: TikTok: ${tiktokFollowers}, Instagram: ${instagramFollowers}, Total: ${totalFollowers}, Rank: ${rankData.rank}`);
+    console.log(`[syncAndRankInfluencer] User ${user.id}: TikTok: ${tiktokFollowers} (was ${previousTikTokFollowers}), Instagram: ${instagramFollowers}, Total: ${totalFollowers}, Rank: ${rankData.rank}`);
 
-    // Update user data
+    // Update user data including profile info and growth tracking
     const updateData = {
       tiktok_followers: tiktokFollowers,
+      tiktok_followers_previous: previousTikTokFollowers,
+      tiktok_username: tiktokProfile.displayName || user.tiktok_username,
+      tiktok_avatar_url: tiktokProfile.avatarUrl || user.tiktok_avatar_url,
+      tiktok_bio: tiktokProfile.bio || user.tiktok_bio,
       instagram_followers: instagramFollowers,
       total_followers: totalFollowers,
       influencer_rank: rankData.rank,
@@ -151,6 +157,8 @@ Deno.serve(async (req) => {
       rank_data: rankData,
       total_followers: totalFollowers,
       tiktok_followers: tiktokFollowers,
+      tiktok_followers_previous: previousTikTokFollowers,
+      tiktok_growth: tiktokFollowers - previousTikTokFollowers,
       instagram_followers: instagramFollowers
     }), { 
       status: 200, 

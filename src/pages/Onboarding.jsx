@@ -132,13 +132,8 @@ export default function Onboarding() {
     checkAuthAndRedirect();
   }, []);
 
-  const handleLogin = async () => {
-    try {
-      await User.loginWithRedirect(window.location.href);
-    } catch (error) {
-      console.error("Login failed:", error);
-      setError("Login failed. Please try again.");
-    }
+  const handleLogin = () => {
+    window.location.href = createPageUrl('SignIn');
   };
 
   const handleAccountTypeSelect = async (type) => {
@@ -240,7 +235,7 @@ export default function Onboarding() {
     }
   };
 
-  if (loading || !isAuthenticated) {
+  if (loading) {
     return (
       <div className="min-h-[100dvh] bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center px-4">
         <div className="text-center">

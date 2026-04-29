@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { User, Business } from '@/entities/all';
+import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -133,7 +134,7 @@ export default function Onboarding() {
   }, []);
 
   const handleLogin = () => {
-    window.location.href = createPageUrl('SignIn');
+    base44.auth.redirectToLogin(window.location.href);
   };
 
   const handleAccountTypeSelect = async (type) => {

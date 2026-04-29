@@ -1,28 +1,24 @@
-
 import { useState, useEffect } from 'react';
 import { User } from '@/entities/User';
+import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
 import { Users, Briefcase, Loader2 } from 'lucide-react';
 
 export default function SignIn() {
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkAuthStatus = async () => {
-      setLoading(true);
       try {
         const user = await User.me();
-        // If user is already authenticated, redirect to Dashboard
         if (user && user.id) {
           window.location.href = createPageUrl('Dashboard');
           return;
         }
       } catch (e) {
-        // User is not authenticated, which is expected on this page.
-        console.log('User not authenticated - showing sign in options');
+        // Not authenticated — show sign in options
       } finally {
         setLoading(false);
       }
@@ -30,18 +26,10 @@ export default function SignIn() {
     checkAuthStatus();
   }, []);
 
-  const handleLogin = async (type) => {
-    try {
-      console.log(`User selected ${type} account type`);
-      // Store the intended account type before redirecting
-      localStorage.setItem('intended_account_type', type);
-      
-      // Since the app is now public, redirect to onboarding which will handle the login
-      window.location.href = createPageUrl('Onboarding');
-    } catch (error) {
-      console.error("Login initiation failed:", error);
-      setError("Login initiation failed. Please try again.");
-    }
+  const handleLogin = (type) => {
+    localStorage.setItem('intended_account_type', type);
+    // Redirect to platform login, then come back to Onboarding to complete setup
+    base44.auth.redirectToLogin(window.location.origin + createPageUrl('Onboarding'));
   };
 
   if (loading) {
@@ -68,7 +56,7 @@ export default function SignIn() {
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome to CashLap</h1>
         <p className="text-gray-600 mb-8">Choose your account type to get started.</p>
-        
+
         <div className="space-y-4 max-w-xs mx-auto">
           <Button
             onClick={() => handleLogin('player')}
@@ -89,10 +77,8 @@ export default function SignIn() {
         </div>
 
         <div className="mt-6 text-sm text-gray-500">
-          <p>Already have an account? Selecting your account type will take you to sign in.</p>
+          <p>Already have an account? Selecting your account type will sign you in.</p>
         </div>
-
-        {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
       </motion.div>
     </div>
   );

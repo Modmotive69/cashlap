@@ -167,18 +167,19 @@ Deno.serve(async (req) => {
     try {
       const business = await base44.asServiceRole.entities.Business.get(campaign.business_id);
       if (business?.business_owner_id) {
-        await base44.functions.invoke('createNotification', {
-          userId: business.business_owner_id,
+        await base44.asServiceRole.entities.Notification.create({
+          user_id: business.business_owner_id,
           type: 'general',
           title: '🎯 New Player Check-In!',
           message: `${user.display_name || user.full_name || 'A player'} just checked into your campaign "${campaign.title}".`,
-          linkUrl: `/SubmissionReview?campaignId=${campaign.id}`, // Updated line
+          link_url: `/SubmissionReview?campaignId=${campaign.id}`,
           priority: 'medium',
-          metadata: { playerId: user.id, campaignId: campaign.id, businessId: campaign.business_id }
+          metadata: { playerId: user.id, campaignId: campaign.id }
         });
+        console.log('[CheckIn] Business owner notification created.');
       }
     } catch(notificationError) {
-      console.error('[CheckIn] Failed to create business owner notification (non-critical):', notificationError);
+      console.error('[CheckIn] Failed to create business owner notification:', notificationError);
     }
     
     let businessName = 'Business';

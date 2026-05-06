@@ -50,22 +50,16 @@ Deno.serve(async (req) => {
         if (campaignBudget > 0 && (currentSpending + finalReward) > campaignBudget) {
             // Create budget exceeded notification for business owner
             try {
-                const businessOwner = await base44.asServiceRole.entities.User.filter({ business_id: campaign.business_id });
-                if (businessOwner.length > 0) {
+                const business = await base44.asServiceRole.entities.Business.get(campaign.business_id);
+                if (business?.business_owner_id) {
                     await base44.asServiceRole.entities.Notification.create({
-                        user_id: businessOwner[0].id,
+                        user_id: business.business_owner_id,
                         type: 'low_budget',
                         title: '🚨 Campaign Budget Exceeded',
                         message: `Cannot approve mission for "${campaign.title}" - would exceed budget of $${campaignBudget.toFixed(2)}. Current spending: $${currentSpending.toFixed(2)}.`,
                         link_url: `/CampaignManager`,
                         priority: 'high',
-                        metadata: {
-                            campaign_id: campaign.id,
-                            mission_id: missionId,
-                            budget: campaignBudget,
-                            current_spending: currentSpending,
-                            attempted_spend: finalReward
-                        }
+                        metadata: { campaign_id: campaign.id, mission_id: missionId }
                     });
                 }
             } catch (notificationError) {
@@ -140,75 +134,60 @@ Deno.serve(async (req) => {
             related_entity_id: missionId
         });
 
-        // **NEW: Check budget thresholds and send warnings**
+        // Check budget thresholds and send warnings
         const newSpending = currentSpending + finalReward;
         const spendingPercentage = campaignBudget > 0 ? (newSpending / campaignBudget) * 100 : 0;
 
-        // Get business owner for notifications
+        // Get business owner via the Business entity (more reliable than filtering Users by business_id)
+        let businessOwnerId = null;
         try {
-            const businessOwner = await base44.asServiceRole.entities.User.filter({ business_id: campaign.business_id });
-            if (businessOwner.length > 0) {
-                const ownerId = businessOwner[0].id;
-                
-                // Check if we should send budget warnings (avoid spam by checking notification history)
-                const existingWarnings = await base44.asServiceRole.entities.Notification.filter({
-                    user_id: ownerId,
-                    type: 'low_budget',
-                    'metadata.campaign_id': campaign.id
-                });
+            const business = await base44.asServiceRole.entities.Business.get(campaign.business_id);
+            if (business?.business_owner_id) {
+                businessOwnerId = business.business_owner_id;
+                console.log(`[MissionApproval] Business owner ID: ${businessOwnerId}`);
+            } else {
+                console.warn('[MissionApproval] Business found but no business_owner_id:', business);
+            }
+        } catch (bizErr) {
+            console.error('[MissionApproval] Failed to fetch business for owner lookup:', bizErr);
+        }
 
-                const hasWarning90 = existingWarnings.some(n => n.metadata?.threshold === 90);
-                const hasWarning75 = existingWarnings.some(n => n.metadata?.threshold === 75);
-
-                // Send 90% warning
-                if (spendingPercentage >= 90 && !hasWarning90) {
+        // Send budget warning to business owner
+        if (businessOwnerId && campaignBudget > 0) {
+            try {
+                if (spendingPercentage >= 90) {
                     await base44.asServiceRole.entities.Notification.create({
-                        user_id: ownerId,
+                        user_id: businessOwnerId,
                         type: 'low_budget',
                         title: '⚠️ Campaign Budget Alert - 90%',
                         message: `"${campaign.title}" has used ${spendingPercentage.toFixed(1)}% of its budget ($${newSpending.toFixed(2)} of $${campaignBudget.toFixed(2)}). Consider increasing the budget soon.`,
                         link_url: `/CampaignManager`,
                         priority: 'high',
-                        metadata: {
-                            campaign_id: campaign.id,
-                            threshold: 90,
-                            spending: newSpending,
-                            budget: campaignBudget,
-                            percentage: spendingPercentage
-                        }
+                        metadata: { campaign_id: campaign.id, threshold: 90 }
                     });
-                }
-                // Send 75% warning
-                else if (spendingPercentage >= 75 && !hasWarning75) {
+                } else if (spendingPercentage >= 75) {
                     await base44.asServiceRole.entities.Notification.create({
-                        user_id: ownerId,
+                        user_id: businessOwnerId,
                         type: 'low_budget',
                         title: '💡 Campaign Budget Notice - 75%',
                         message: `"${campaign.title}" has used ${spendingPercentage.toFixed(1)}% of its budget ($${newSpending.toFixed(2)} of $${campaignBudget.toFixed(2)}). You may want to increase the budget.`,
                         link_url: `/CampaignManager`,
                         priority: 'medium',
-                        metadata: {
-                            campaign_id: campaign.id,
-                            threshold: 75,
-                            spending: newSpending,
-                            budget: campaignBudget,
-                            percentage: spendingPercentage
-                        }
+                        metadata: { campaign_id: campaign.id, threshold: 75 }
                     });
                 }
+            } catch (budgetNotifErr) {
+                console.error('[MissionApproval] Failed to create budget notification:', budgetNotifErr);
             }
-        } catch (notificationError) {
-            console.warn('Failed to create budget warning notifications:', notificationError);
         }
 
-        // Create success notification for player
+        // Create approval notification for player
         try {
             let notificationMessage = `Congratulations! You earned $${finalReward.toFixed(2)} for completing "${mission.title}".`;
-            
             if (influencerMultiplier > 1.0) {
                 notificationMessage += ` Your ${player.influencer_rank || 'influencer'} rank gave you a ${influencerMultiplier}x multiplier!`;
             }
-
+            console.log(`[MissionApproval] Creating approval notification for player ${mission.user_id}`);
             await base44.asServiceRole.entities.Notification.create({
                 user_id: mission.user_id,
                 type: 'mission_approved',
@@ -220,12 +199,12 @@ Deno.serve(async (req) => {
                     mission_id: missionId, 
                     base_reward: baseReward,
                     influencer_multiplier: influencerMultiplier,
-                    final_reward: finalReward,
-                    mission_title: mission.title
+                    final_reward: finalReward
                 }
             });
+            console.log(`[MissionApproval] Approval notification created successfully.`);
         } catch (notificationError) {
-            console.warn('Failed to create approval notification:', notificationError);
+            console.error('[MissionApproval] Failed to create approval notification:', notificationError);
         }
 
         return new Response(JSON.stringify({ 

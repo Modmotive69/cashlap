@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createPageUrl } from '@/utils';
+import { safeStorage } from '@/lib/storage';
 import {
   ArrowRight,
   ArrowLeft,
@@ -103,9 +104,9 @@ export default function Onboarding() {
       try {
         let currentUser = await User.me();
         
-        const intendedType = localStorage.getItem('intended_account_type');
+        const intendedType = safeStorage.getItem('intended_account_type');
         if (intendedType && !currentUser.account_type) {
-          localStorage.removeItem('intended_account_type');
+          safeStorage.removeItem('intended_account_type');
           // Merge locally — no need for a second User.me() round-trip
           await User.updateMyUserData({ account_type: intendedType });
           currentUser = { ...currentUser, account_type: intendedType };

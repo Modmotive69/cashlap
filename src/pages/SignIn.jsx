@@ -3,6 +3,7 @@ import { User } from '@/entities/User';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { createPageUrl } from '@/utils';
+import { safeStorage } from '@/lib/storage';
 import { motion } from 'framer-motion';
 import { Users, Briefcase, Loader2 } from 'lucide-react';
 
@@ -27,7 +28,7 @@ export default function SignIn() {
   }, []);
 
   const handleLogin = (type) => {
-    localStorage.setItem('intended_account_type', type);
+    safeStorage.setItem('intended_account_type', type);
     // Redirect to platform login, then come back to Onboarding to complete setup
     base44.auth.redirectToLogin(window.location.origin + createPageUrl('Onboarding'));
   };

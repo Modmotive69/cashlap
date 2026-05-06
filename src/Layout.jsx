@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { User } from "@/entities/User";
 import { Home, Map, User as UserIcon, TrendingUp, BarChart3, Target } from "lucide-react";
+import { safeStorage } from '@/lib/storage';
 import CashChatbot from "@/components/chat/CashChatbot";
 import { useInactivityLogout } from "@/components/auth/useInactivityLogout";
 import NotificationBell from '@/components/notifications/NotificationBell';
@@ -93,7 +93,7 @@ export default function Layout({ children, currentPageName }) {
           setIsAuthenticated(true);
           
           // Cache the account type for faster loading next time
-          localStorage.setItem('cached_account_type', user.account_type);
+          safeStorage.setItem('cached_account_type', user.account_type);
         } else {
           console.warn('[Layout] User found but no account_type set, defaulting to player');
           setIsAuthenticated(true);
@@ -104,7 +104,7 @@ export default function Layout({ children, currentPageName }) {
         setIsAuthenticated(false);
         
         // Try to use cached account type as fallback
-        const cachedType = localStorage.getItem('cached_account_type');
+        const cachedType = safeStorage.getItem('cached_account_type');
         if (cachedType) {
           console.log(`[Layout] Using cached account type: ${cachedType}`);
           setAccountType(cachedType);

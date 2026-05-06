@@ -116,24 +116,28 @@ export default function Onboarding() {
   
         if (currentUser.onboarding_completed) {
           window.location.href = createPageUrl('Dashboard');
-          return;
+          return; // keep loading=true until redirect
         }
   
         if (currentUser.account_type) {
           setAccountType(currentUser.account_type);
         }
+        
+        setLoading(false);
   
       } catch (error) {
+        // User is not authenticated — redirect to login and keep the spinner
+        // so mobile users don't see a broken intermediate state
         setIsAuthenticated(false);
-        handleLogin();
-      } finally {
-        setLoading(false);
+        base44.auth.redirectToLogin(window.location.href);
+        // intentionally keep loading=true so spinner stays until redirect completes
       }
     };
     checkAuthAndRedirect();
   }, []);
 
   const handleLogin = () => {
+    setLoading(true); // keep spinner visible until redirect completes
     base44.auth.redirectToLogin(window.location.href);
   };
 

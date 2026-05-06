@@ -255,7 +255,7 @@ export default function Onboarding() {
   const currentStepData = steps[currentStep];
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50" style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+    <div className="min-h-[100dvh] bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50" style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}>
       <div className="max-w-md mx-auto w-full px-4">
         {!accountType ? (
           <motion.div

@@ -190,6 +190,13 @@ export default function Layout({ children, currentPageName }) {
             -webkit-overflow-scrolling: touch;
             scroll-behavior: smooth;
           }
+
+          ${isFullScreenPage ? `
+          html, body, #root {
+            height: auto !important;
+            overflow: visible !important;
+            touch-action: pan-y !important;
+          }` : ''}
         `}
       </style>
     

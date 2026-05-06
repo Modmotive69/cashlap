@@ -138,13 +138,9 @@ export default function Layout({ children, currentPageName }) {
               font-size: 16px;
             }
             
-            html, body, #root {
-              height: 100%;
-              overflow: hidden;
-            }
-          `}
-        </style>
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
+            `}
+            </style>
+            <div className="flex items-center justify-center min-h-screen bg-gray-100">
           <div className="w-8 h-8 border-2 border-[var(--cashlap-green)] border-t-transparent rounded-full animate-spin"></div>
         </div>
       </>
@@ -173,10 +169,11 @@ export default function Layout({ children, currentPageName }) {
             font-size: 16px;
           }
           
+          ${!isFullScreenPage ? `
           html, body, #root {
             height: 100%;
             overflow: hidden;
-          }
+          }` : ''}
           
           input[type="text"],
           input[type="email"],

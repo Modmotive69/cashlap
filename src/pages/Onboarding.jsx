@@ -255,13 +255,13 @@ export default function Onboarding() {
   const currentStepData = steps[currentStep];
 
   return (
-    <div className="flex flex-col h-[100dvh] bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      <div className="max-w-md mx-auto w-full flex flex-col flex-1 px-4">
+    <div className="min-h-[100dvh] bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50" style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+      <div className="max-w-md mx-auto w-full px-4">
         {!accountType ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex-1 flex items-center justify-center py-8"
+            className="flex flex-col items-center justify-center py-8 min-h-[100dvh]"
           >
             <div className="w-full space-y-8 text-center">
               <div>
@@ -347,7 +347,7 @@ export default function Onboarding() {
         ) : (
           <>
             {/* Hero Header */}
-            <div className="pt-8 pb-6 flex-shrink-0">
+            <div className="pt-8 pb-6">
               <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -381,8 +381,8 @@ export default function Onboarding() {
               </div>
             </div>
 
-            {/* Scrollable Content Area */}
-            <div className="flex-1 overflow-y-auto pb-4">
+            {/* Content Area */}
+            <div className="pb-4">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentStep}
@@ -433,7 +433,7 @@ export default function Onboarding() {
             </div>
 
             {/* Navigation Footer */}
-            <div className="py-6 flex-shrink-0 px-2">
+            <div className="py-6 px-2 pb-12">
               <div className="flex justify-between items-center gap-4 mb-4">
                 <Button
                   variant="outline"

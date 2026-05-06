@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { User, Notification } from '@/entities/all';
 import { base44 } from '@/api/base44Client';
+import { markNotificationsRead } from '@/functions/markNotificationsRead';
 import { Button } from '@/components/ui/button';
 import {
   Bell,
@@ -23,6 +24,7 @@ export default function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const userIdRef = useRef(null);
   const navigate = useNavigate();
 
   const fetchNotifications = useCallback(async (userId) => {
@@ -49,6 +51,7 @@ export default function NotificationBell() {
       try {
         const currentUser = await User.me();
         setUser(currentUser);
+        userIdRef.current = currentUser.id;
         await fetchNotifications(currentUser.id);
 
         // Real-time subscription — fires instantly when a notification is created/updated/deleted
@@ -85,7 +88,7 @@ export default function NotificationBell() {
 
     // Fallback poll every 15 seconds in case websocket drops
     const interval = setInterval(() => {
-      if (user?.id) fetchNotifications(user.id);
+      if (userIdRef.current) fetchNotifications(userIdRef.current);
     }, 15000);
 
     return () => {
@@ -97,24 +100,24 @@ export default function NotificationBell() {
   const markAsRead = async (notificationId) => {
     const notification = notifications.find(n => n.id === notificationId);
     if (!notification || notification.is_read) return;
+    // Optimistic update
+    setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n));
+    setUnreadCount(prev => Math.max(0, prev - 1));
     try {
-      await Notification.update(notificationId, { is_read: true });
-      // Real-time subscription will handle the UI update automatically
+      await markNotificationsRead({ notificationIds: [notificationId] });
     } catch (error) {
       console.error('Error marking notification as read:', error);
     }
   };
 
   const markAllAsRead = async () => {
+    const unreadIds = notifications.filter(n => !n.is_read).map(n => n.id);
+    if (unreadIds.length === 0) return;
+    // Optimistic update
+    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    setUnreadCount(0);
     try {
-      const unreadIds = notifications.filter(n => !n.is_read).map(n => n.id);
-      if (unreadIds.length === 0) return;
-
-      // In a real SDK, you might have a bulk update. Simulating it here.
-      await Promise.all(unreadIds.map(id => Notification.update(id, { is_read: true })));
-      
-      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-      setUnreadCount(0);
+      await markNotificationsRead({ notificationIds: unreadIds });
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
     }

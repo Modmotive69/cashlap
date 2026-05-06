@@ -1,4 +1,3 @@
-
 import { createClientFromRequest } from 'npm:@base44/sdk@0.7.0';
 
 // Haversine formula to calculate distance between two lat/lng points in meters
@@ -170,7 +169,7 @@ Deno.serve(async (req) => {
       if (business?.business_owner_id) {
         await base44.functions.invoke('createNotification', {
           userId: business.business_owner_id,
-          type: 'campaign_interaction',
+          type: 'general',
           title: '🎯 New Player Check-In!',
           message: `${user.display_name || user.full_name || 'A player'} just checked into your campaign "${campaign.title}".`,
           linkUrl: `/SubmissionReview?campaignId=${campaign.id}`, // Updated line

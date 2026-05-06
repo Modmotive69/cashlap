@@ -956,7 +956,7 @@ function CampaignManager() { // Renamed from CampaignManagerContent
                 </div>
                 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
-                  <Link to={createPageUrl(`SubmissionReview?campaignId=${campaign.id}`)} className="w-full sm:flex-1">
+                  <Link to={`/SubmissionReview?campaignId=${campaign.id}`} className="w-full sm:flex-1">
                     <Button variant="outline" size="sm" className="w-full relative">
                       <MessageSquare className="w-3 h-3 mr-1.5" />
                       Review

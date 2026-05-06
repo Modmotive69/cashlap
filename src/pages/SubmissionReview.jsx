@@ -32,9 +32,9 @@ function SubmissionReviewContent() {
   const [processingMissions, setProcessingMissions] = useState(new Set());
   const [rejectionReasons, setRejectionReasons] = useState({});
 
-  // Get campaignId from URL parameters
+  // Get campaignId from URL parameters (handle both camelCase and lowercase)
   const urlParams = new URLSearchParams(window.location.search);
-  const campaignId = urlParams.get('campaignId');
+  const campaignId = urlParams.get('campaignId') || urlParams.get('campaignid');
 
   const loadSubmissionData = useCallback(async () => {
     // Validate campaignId parameter first

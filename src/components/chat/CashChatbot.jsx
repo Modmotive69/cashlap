@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -68,8 +67,6 @@ export default function CashChatbot() {
   const y = useMotionValue(0);
 
   useEffect(() => {
-    loadUser();
-
     // On initial load, check for a saved position in local storage
     const savedY = localStorage.getItem('cashie_position_y');
     if (savedY !== null) {
@@ -166,10 +163,11 @@ Respond as Cashie in a helpful, friendly way. Keep it concise (2-3 sentences max
 
   const toggleChat = () => {
     setIsOpen(!isOpen);
-    // If opening chat, ensure it's not collapsed or minimized
     if (!isOpen) {
       setIsCollapsed(false);
       setIsMinimized(false);
+      // Lazy-load user only when chat is first opened
+      if (!user) loadUser();
     }
   };
 
@@ -184,9 +182,10 @@ Respond as Cashie in a helpful, friendly way. Keep it concise (2-3 sentences max
   };
 
   const handleExpand = () => {
-    if (!isDragging) { // Only expand if not currently dragging
+    if (!isDragging) {
       setIsCollapsed(false);
       setIsOpen(true);
+      if (!user) loadUser();
     }
   };
 

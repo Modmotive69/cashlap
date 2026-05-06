@@ -79,34 +79,19 @@ export default function Layout({ children, currentPageName }) {
         
         // Get fresh user data from the server
         const user = await User.me();
-        console.log('[Layout] Current user data:', {
-          id: user.id,
-          email: user.email,
-          account_type: user.account_type,
-          onboarding_completed: user.onboarding_completed
-        });
 
         if (user && user.account_type) {
-          // Use the account type from the server
-          console.log(`[Layout] Setting account type to: ${user.account_type}`);
           setAccountType(user.account_type);
           setIsAuthenticated(true);
-          
-          // Cache the account type for faster loading next time
           safeStorage.setItem('cached_account_type', user.account_type);
         } else {
-          console.warn('[Layout] User found but no account_type set, defaulting to player');
           setIsAuthenticated(true);
           setAccountType('player');
         }
       } catch (error) {
-        console.warn('[Layout] Could not fetch user account type:', error);
         setIsAuthenticated(false);
-        
-        // Try to use cached account type as fallback
         const cachedType = safeStorage.getItem('cached_account_type');
         if (cachedType) {
-          console.log(`[Layout] Using cached account type: ${cachedType}`);
           setAccountType(cachedType);
         } else {
           setAccountType('player');

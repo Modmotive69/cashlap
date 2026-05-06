@@ -254,8 +254,3 @@ class RequestQueue {
 export const rateLimiter = new RateLimiter();
 export const circuitBreaker = new CircuitBreaker();
 export const requestQueue = new RequestQueue();
-
-// Cleanup interval
-setInterval(() => {
-  rateLimiter.cleanup();
-}, 5 * 60 * 1000); // Every 5 minutes

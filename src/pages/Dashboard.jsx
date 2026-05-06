@@ -175,7 +175,7 @@ function DashboardContent() {
       alert("This mission's details are incomplete.");
       return;
     }
-    window.location.href = createPageUrl(`MissionSubmission?missionId=${mission.id}`);
+    window.location.href = `/MissionSubmission?missionId=${mission.id}`;
   };
 
   const getRankProgress = () => {

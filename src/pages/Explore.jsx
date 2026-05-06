@@ -234,7 +234,7 @@ function ExploreContent() {
     // Navigate directly to mission submission page with the created mission
     if (mission && mission.id) {
       console.log('Navigating to mission submission with mission:', mission.id);
-      window.location.href = createPageUrl(`MissionSubmission?missionId=${mission.id}`);
+      window.location.href = `/MissionSubmission?missionId=${mission.id}`;
     } else {
       // Fallback if no mission data is provided
       setPageError("Mission started successfully! Check your dashboard for active missions.");

@@ -1,6 +1,6 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { User, Notification } from '@/entities/all';
+import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import {
   Bell,
@@ -25,57 +25,81 @@ export default function NotificationBell() {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
-  const fetchNotifications = useCallback(async () => {
-    if (!user) return;
+  const fetchNotifications = useCallback(async (userId) => {
+    if (!userId) return;
     try {
       const fetchedNotifications = await Notification.filter(
-        { user_id: user.id }, 
+        { user_id: userId }, 
         '-created_date', 
         20
       );
       setNotifications(fetchedNotifications);
-      const unread = fetchedNotifications.filter(n => !n.is_read).length;
-      setUnreadCount(unread);
+      setUnreadCount(fetchedNotifications.filter(n => !n.is_read).length);
     } catch (error) {
       console.error('Error fetching notifications:', error);
     } finally {
       setLoading(false);
     }
-  }, [user]);
-
-  useEffect(() => {
-    const fetchUserAndNotifications = async () => {
-      try {
-        const currentUser = await User.me();
-        setUser(currentUser);
-      } catch (error) {
-        console.error('Failed to fetch user or unread count:', error);
-        setLoading(false);
-      }
-    };
-    fetchUserAndNotifications();
   }, []);
 
   useEffect(() => {
-    if (user) {
-      fetchNotifications();
-      // Poll more frequently for a "live" feel
-      const interval = setInterval(fetchNotifications, 30000); // Poll every 30 seconds
-      return () => clearInterval(interval);
-    }
-  }, [user, fetchNotifications]);
+    let unsubscribe = null;
+
+    const init = async () => {
+      try {
+        const currentUser = await User.me();
+        setUser(currentUser);
+        await fetchNotifications(currentUser.id);
+
+        // Real-time subscription — fires instantly when a notification is created/updated/deleted
+        unsubscribe = base44.entities.Notification.subscribe((event) => {
+          if (event.data?.user_id !== currentUser.id) return;
+
+          if (event.type === 'create') {
+            setNotifications(prev => [event.data, ...prev].slice(0, 20));
+            if (!event.data.is_read) setUnreadCount(prev => prev + 1);
+          } else if (event.type === 'update') {
+            setNotifications(prev =>
+              prev.map(n => n.id === event.id ? event.data : n)
+            );
+            // Recalculate unread count from latest state
+            setNotifications(prev => {
+              setUnreadCount(prev.filter(n => !n.is_read).length);
+              return prev;
+            });
+          } else if (event.type === 'delete') {
+            setNotifications(prev => {
+              const updated = prev.filter(n => n.id !== event.id);
+              setUnreadCount(updated.filter(n => !n.is_read).length);
+              return updated;
+            });
+          }
+        });
+      } catch (error) {
+        console.error('Failed to initialize notifications:', error);
+        setLoading(false);
+      }
+    };
+
+    init();
+
+    // Fallback poll every 15 seconds in case websocket drops
+    const interval = setInterval(() => {
+      if (user?.id) fetchNotifications(user.id);
+    }, 15000);
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+      clearInterval(interval);
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const markAsRead = async (notificationId) => {
-    // Only proceed if the notification is currently unread
     const notification = notifications.find(n => n.id === notificationId);
     if (!notification || notification.is_read) return;
-
     try {
       await Notification.update(notificationId, { is_read: true });
-      setNotifications(prev => 
-        prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
-      );
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      // Real-time subscription will handle the UI update automatically
     } catch (error) {
       console.error('Error marking notification as read:', error);
     }

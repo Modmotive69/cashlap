@@ -105,10 +105,10 @@ export default function Onboarding() {
         
         const intendedType = localStorage.getItem('intended_account_type');
         if (intendedType && !currentUser.account_type) {
-            console.log(`User logged in, setting intended account type to: ${intendedType}`);
-            localStorage.removeItem('intended_account_type');
-            await User.updateMyUserData({ account_type: intendedType });
-            currentUser = await User.me(); 
+          localStorage.removeItem('intended_account_type');
+          // Merge locally — no need for a second User.me() round-trip
+          await User.updateMyUserData({ account_type: intendedType });
+          currentUser = { ...currentUser, account_type: intendedType };
         }
         
         setUser(currentUser);
@@ -126,11 +126,9 @@ export default function Onboarding() {
         setLoading(false);
   
       } catch (error) {
-        // User is not authenticated — redirect to login and keep the spinner
-        // so mobile users don't see a broken intermediate state
+        // Not authenticated — redirect to login, keep spinner until redirect completes
         setIsAuthenticated(false);
         base44.auth.redirectToLogin(window.location.href);
-        // intentionally keep loading=true so spinner stays until redirect completes
       }
     };
     checkAuthAndRedirect();
@@ -160,8 +158,7 @@ export default function Onboarding() {
     setError('');
 
     try {
-      const currentUser = user || await User.me();
-      let finalUser;
+      const currentUser = user;
 
       if (accountType === 'player') {
         const updateData = {
@@ -191,12 +188,11 @@ export default function Onboarding() {
         await User.updateMyUserData(updateUserWithBusinessData);
       }
 
-      finalUser = await User.me();
-
+      // Use cached user — no extra User.me() round-trip needed
       try {
         if (accountType === 'player') {
           await createNotification({
-            userId: finalUser.id,
+            userId: currentUser.id,
             type: 'welcome',
             title: '🎉 Welcome to CashLap!',
             message: 'Start exploring local businesses and earning rewards!',
@@ -204,7 +200,7 @@ export default function Onboarding() {
           });
         } else if (accountType === 'business') {
            await createNotification({
-            userId: finalUser.id,
+            userId: currentUser.id,
             type: 'welcome',
             title: '🏪 Welcome to CashLap Business!',
             message: 'Create campaigns to attract customers and boost your social media presence!',

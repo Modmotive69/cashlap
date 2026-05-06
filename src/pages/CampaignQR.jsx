@@ -23,7 +23,7 @@ function CampaignQRContent() {
             setError('');
             try {
                 const params = new URLSearchParams(location.search);
-                const campaignId = params.get('campaignId');
+                const campaignId = params.get('campaignId') || params.get('campaignid');
 
                 if (!campaignId) {
                     setError("No campaign specified.");

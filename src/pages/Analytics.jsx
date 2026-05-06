@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Business, Mission, User } from "@/entities/all";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -107,9 +106,9 @@ function AnalyticsContent() {
   }, []);
 
   const getPlayerStats = () => {
-    const completedMissions = userMissions.filter(m => m.status === 'completed');
+    const completedMissions = userMissions.filter(m => m.status === 'approved');
     const activeMissions = userMissions.filter(m => m.status === 'active');
-    const totalEarnings = completedMissions.reduce((sum, m) => sum + (m.reward_amount || 0), 0);
+    const totalEarnings = completedMissions.reduce((sum, m) => sum + (m.final_reward_amount || m.reward_amount || 0), 0);
     const averageRating = completedMissions.filter(m => m.rating).reduce((sum, m) => sum + m.rating, 0) / completedMissions.filter(m => m.rating).length || 0;
 
     const categoryStats = {};
@@ -132,8 +131,8 @@ function AnalyticsContent() {
 
   const getRecentActivity = () => {
     return userMissions
-      .filter(m => m.status === 'completed')
-      .sort((a, b) => new Date(b.completion_date) - new Date(a.completion_date))
+      .filter(m => m.status === 'approved')
+      .sort((a, b) => new Date(b.submitted_at || b.updated_date) - new Date(a.submitted_at || a.updated_date))
       .slice(0, 10);
   };
 
@@ -184,7 +183,7 @@ function AnalyticsContent() {
             <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[var(--cashlap-yellow)]/20 rounded-full flex items-center justify-center mx-auto mb-3">
               <Coins className="w-5 h-5 sm:w-6 sm:h-6 text-[var(--cashlap-yellow)]" />
             </div>
-            <p className="text-lg sm:text-2xl font-bold text-gray-900">${stats.totalEarnings}</p>
+            <p className="text-lg sm:text-2xl font-bold text-gray-900">${stats.totalEarnings.toFixed(2)}</p>
             <p className="text-xs sm:text-sm text-gray-500">Total Earned</p>
           </CardContent>
         </Card>
@@ -292,12 +291,12 @@ function AnalyticsContent() {
                       </div>
                       <div className="flex items-center gap-1 text-xs sm:text-sm text-gray-500">
                         <Calendar className="w-3 h-3" />
-                        {mission.completion_date && format(new Date(mission.completion_date), 'MMM d, HH:mm')}
+                        {(mission.submitted_at || mission.updated_date) && format(new Date(mission.submitted_at || mission.updated_date), 'MMM d, HH:mm')}
                       </div>
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="font-semibold text-[var(--cashlap-green)] text-sm sm:text-base">+${mission.reward_amount}</p>
+                    <p className="font-semibold text-[var(--cashlap-green)] text-sm sm:text-base">+${(mission.final_reward_amount || mission.reward_amount || 0).toFixed(2)}</p>
                     {mission.rating && (
                       <div className="flex items-center gap-1 text-xs sm:text-sm justify-end">
                         <Star className="w-3 h-3 text-[var(--cashlap-yellow)] fill-current" />

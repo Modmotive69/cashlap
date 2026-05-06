@@ -1,5 +1,5 @@
-
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Mission, Campaign } from "@/entities/all";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,8 +34,10 @@ function MissionSubmissionContent() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successData, setSuccessData] = useState(null);
 
-  // Get mission ID from URL
-  const missionId = new URLSearchParams(window.location.search).get('missionId');
+  // Get mission ID from URL (handle both camelCase and lowercase variants)
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const missionId = params.get('missionId') || params.get('missionid');
 
   // Load mission data once on mount
   useEffect(() => {

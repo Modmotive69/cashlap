@@ -66,7 +66,7 @@ export default function Layout({ children, currentPageName }) {
   useEffect(() => {
     const fetchUserAccountType = async () => {
       // List of pages that have their own custom, full-screen layout
-      const fullScreenPages = ['SignIn', 'Onboarding', 'CameraCapture', 'PaymentSuccess', 'MissionSubmission', 'ARMap'];
+      const fullScreenPages = ['SignIn', 'Onboarding', 'CameraCapture', 'PaymentSuccess', 'MissionSubmission'];
       
       // Skip auth checks for these pages
       if (fullScreenPages.includes(currentPageName)) {
@@ -112,7 +112,7 @@ export default function Layout({ children, currentPageName }) {
     return spacedName;
   };
 
-  const isFullScreenPage = ['SignIn', 'Onboarding', 'CameraCapture', 'PaymentSuccess', 'MissionSubmission', 'ARMap'].includes(currentPageName);
+  const isFullScreenPage = ['SignIn', 'Onboarding', 'CameraCapture', 'PaymentSuccess', 'MissionSubmission'].includes(currentPageName);
 
   // Show loading state briefly while determining account type
   if (isLoading && !isFullScreenPage) {

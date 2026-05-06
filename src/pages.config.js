@@ -19,7 +19,6 @@ import CampaignQR from './pages/CampaignQR';
 import SignIn from './pages/SignIn';
 import TikTokRedirectHandler from './pages/TikTokRedirectHandler';
 import TikTokComplete from './pages/TikTokComplete';
-import ARMap from './pages/ARMap';
 import __Layout from './Layout.jsx';
 
 
@@ -45,7 +44,6 @@ export const PAGES = {
     "SignIn": SignIn,
     "TikTokRedirectHandler": TikTokRedirectHandler,
     "TikTokComplete": TikTokComplete,
-    "ARMap": ARMap,
 }
 
 export const pagesConfig = {

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { User, Campaign, Mission } from "@/entities/all";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -334,7 +333,7 @@ function BusinessAnalyticsContent() {
   } = analytics;
 
   return (
-    <div className="p-4 space-y-6 pb-24">
+    <div className="p-4 space-y-6 pb-24 max-w-2xl mx-auto">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -456,14 +455,14 @@ function BusinessAnalyticsContent() {
             Campaign Performance
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-2 sm:px-6">
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={campaignPerformanceData} layout="vertical" margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
+            <BarChart data={campaignPerformanceData} layout="vertical" margin={{ top: 5, right: 15, left: 5, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" />
-              <YAxis type="category" dataKey="title" width={100} tick={{ fontSize: 12, wordWrap: 'break-word', width: 100 }} />
+              <XAxis type="number" tick={{ fontSize: 11 }} />
+              <YAxis type="category" dataKey="title" width={90} tick={{ fontSize: 11 }} />
               <Tooltip />
-              <Legend />
+              <Legend wrapperStyle={{ fontSize: '12px' }} />
               <Bar dataKey="participants" fill="var(--cashlap-blue)" name="Participants" />
               <Bar dataKey="spent" fill="var(--cashlap-green)" name="Spent ($)" />
             </BarChart>
@@ -488,10 +487,10 @@ function BusinessAnalyticsContent() {
 
           <h4 className="text-sm font-medium text-gray-600 pt-2 border-t">Top 5 Campaigns by Conversion</h4>
           <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={campaignConversionData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+            <BarChart data={campaignConversionData} layout="vertical" margin={{ top: 5, right: 15, left: 5, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" domain={[0, 100]} tickFormatter={(tick) => `${tick}%`} />
-              <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 12, wordWrap: 'break-word', width: 100 }} />
+              <XAxis type="number" domain={[0, 100]} tickFormatter={(tick) => `${tick}%`} tick={{ fontSize: 11 }} />
+              <YAxis type="category" dataKey="name" width={90} tick={{ fontSize: 11 }} />
               <Tooltip formatter={(value) => [`${value}%`, "Conversion"]} />
               <Bar dataKey="conversion" name="Conversion Rate" fill="var(--cashlap-pink)" background={{ fill: '#eee' }} />
             </BarChart>

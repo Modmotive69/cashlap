@@ -310,60 +310,52 @@ function ExploreContent() {
         </div>
       )}
 
-      {/* Professional Header Section - Fixed Height */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 space-y-4 flex-shrink-0 relative z-30">
+      {/* Header Section */}
+      <div className="bg-white border-b border-gray-200 px-4 py-3 space-y-3 flex-shrink-0 relative z-30">
         {/* Title and View Toggle */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Discover</h1>
-            <p className="text-sm text-gray-600 mt-1">Find local campaigns and start earning</p>
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <h1 className="text-xl font-semibold text-gray-900">Discover</h1>
+            <p className="text-xs text-gray-500 mt-0.5">Find local campaigns and start earning</p>
           </div>
-          
-          <div className="flex flex-col items-end gap-2">
-            <div className="flex items-center bg-gray-100 rounded-lg p-1">
-              <button
-                onClick={() => setViewMode('list')}
-                className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-all ${
-                  viewMode === 'list' 
-                    ? 'bg-white text-gray-900 shadow-sm' 
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <ListIcon className="w-4 h-4" />
-                List
-              </button>
-              <button
-                onClick={() => setViewMode('map')}
-                className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-all ${
-                  viewMode === 'map' 
-                    ? 'bg-white text-gray-900 shadow-sm' 
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <MapIcon className="w-4 h-4" />
-                Map
-              </button>
-            </div>
-
+          <div className="flex items-center bg-gray-100 rounded-lg p-1 flex-shrink-0">
+            <button
+              onClick={() => setViewMode('list')}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium rounded-md transition-all ${
+                viewMode === 'list' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <ListIcon className="w-4 h-4" />
+              <span className="hidden sm:inline">List</span>
+            </button>
+            <button
+              onClick={() => setViewMode('map')}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium rounded-md transition-all ${
+                viewMode === 'map' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <MapIcon className="w-4 h-4" />
+              <span className="hidden sm:inline">Map</span>
+            </button>
           </div>
         </div>
 
         {/* Search and Filter Bar */}
-        <div className="flex gap-3 pt-2">
-          <div className="relative flex-1">
+        <div className="flex gap-2">
+          <div className="relative flex-1 min-w-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="Search campaigns and businesses..."
+              placeholder="Search campaigns..."
               value={campaignSearchTerm}
               onChange={(e) => setCampaignSearchTerm(e.target.value)}
-              className="pl-10 h-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+              className="pl-9 h-9 border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-sm"
               disabled={rateLimited}
             />
           </div>
-          <div className="relative">
+          <div className="flex-shrink-0">
             <Select value={selectedCategory} onValueChange={setSelectedCategory} disabled={rateLimited}>
-              <SelectTrigger className="w-40 h-10 border-gray-300">
-                <Filter className="w-4 h-4 mr-2 text-gray-400" />
+              <SelectTrigger className="w-32 sm:w-40 h-9 border-gray-300 text-sm">
+                <Filter className="w-3.5 h-3.5 mr-1.5 text-gray-400 flex-shrink-0" />
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent className="z-[9999]">
@@ -390,7 +382,7 @@ function ExploreContent() {
           </div>
         ) : (
           <div className="h-full overflow-y-auto bg-gray-50">
-            <div className="p-6 space-y-4 pb-24">
+            <div className="p-4 space-y-4 pb-24">
               {filteredCampaigns.length === 0 && !rateLimited ? ( // Show no campaigns message only if not rate-limited
                 <div className="flex flex-col items-center justify-center py-16 text-center">
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">

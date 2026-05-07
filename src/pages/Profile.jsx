@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { User, Mission, Business } from "@/entities/all";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -344,7 +343,7 @@ function ProfileContent() {
   const stats = user.account_type === 'player' ? getPlayerStats() : null;
 
   return (
-    <div className="p-4 space-y-6 pb-24">
+    <div className="p-4 space-y-6 pb-24 max-w-lg mx-auto">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

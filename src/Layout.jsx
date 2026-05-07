@@ -205,7 +205,7 @@ export default function Layout({ children, currentPageName }) {
       ) : (
         <div className="flex flex-col h-[100dvh] bg-gray-100 overflow-hidden">
           <header className="sticky top-0 bg-white/80 backdrop-blur-sm z-20 border-b border-gray-200 flex-shrink-0" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-            <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
+            <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
               <div className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
                 <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/35bcc7111_ffb153679_Group40.png" alt="CashLap Logo" className="w-full h-full object-contain" />
               </div>
@@ -217,38 +217,31 @@ export default function Layout({ children, currentPageName }) {
           </header>
 
           <main className="main-content flex-1 bg-gray-100 overflow-y-auto">
-            <div className="max-w-md mx-auto h-full">
-              <div className="h-full">
-                {children}
-              </div>
+            <div className="max-w-lg mx-auto w-full h-full">
+              {children}
             </div>
           </main>
 
           <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 z-[9999] flex-shrink-0" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-            <div className="max-w-md mx-auto">
-              <div className="flex items-center justify-around py-2 px-2">
-                {/* Only show navigation if we have determined the account type */}
+            <div className="max-w-lg mx-auto">
+              <div className="flex items-center justify-around py-1.5 px-1">
                 {accountType && (accountType === 'business' ? businessNavigationItems : navigationItems).map((item) => {
                   const isActive = location.pathname === item.url;
                   return (
                     <Link
                       key={item.title}
                       to={item.url}
-                      className={`flex flex-col items-center justify-center gap-1 p-3 rounded-lg transition-all duration-200 min-w-0 flex-1 touch-manipulation ${
+                      className={`flex flex-col items-center justify-center gap-1 px-2 py-2 rounded-lg transition-all duration-200 min-w-0 flex-1 touch-manipulation ${
                         isActive
-                          ? accountType === 'business' 
-                            ? "text-[var(--cashlap-blue)] bg-blue-100 border border-blue-200"
-                            : "text-[var(--cashlap-green)] bg-green-100 border border-green-200"
-                      : "text-gray-600 hover:text-gray-800 hover:bg-gray-100 active:bg-gray-200"
+                          ? accountType === 'business'
+                            ? "text-[var(--cashlap-blue)] bg-blue-50"
+                            : "text-[var(--cashlap-green)] bg-green-50"
+                          : "text-gray-500 hover:text-gray-700 hover:bg-gray-100 active:bg-gray-200"
                       }`}
-                      style={{ 
-                        minHeight: '64px',
-                        minWidth: '64px',
-                        WebkitTapHighlightColor: 'transparent'
-                      }}
+                      style={{ WebkitTapHighlightColor: 'transparent', minHeight: '56px' }}
                     >
                       <item.icon className="w-5 h-5 flex-shrink-0" />
-                      <span className="text-xs sm:text-sm font-medium truncate w-full text-center leading-tight">{item.title}</span>
+                      <span className="text-xs font-medium truncate w-full text-center leading-tight">{item.title}</span>
                     </Link>
                   );
                 })}

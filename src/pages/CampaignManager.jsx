@@ -1323,7 +1323,7 @@ function CampaignManager() { // Renamed from CampaignManagerContent
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between p-4 flex-wrap gap-2">
+      <div className="flex items-center justify-between p-4 flex-wrap gap-2 max-w-2xl mx-auto w-full">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Campaign Manager</h1>
           <p className="text-gray-600">Create and manage campaigns to attract customers</p>
@@ -1373,7 +1373,7 @@ function CampaignManager() { // Renamed from CampaignManagerContent
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        <div className="p-4 space-y-6 pb-24">
+        <div className="p-4 space-y-6 pb-24 max-w-2xl mx-auto">
           {pageError && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center justify-between gap-4">
               <div className="flex items-start gap-2">

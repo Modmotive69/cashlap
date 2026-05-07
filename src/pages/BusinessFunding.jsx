@@ -75,7 +75,7 @@ function BusinessFundingContent() {
   }
 
   return (
-    <div className="p-4 space-y-4 max-w-md mx-auto">
+    <div className="p-4 space-y-4 max-w-md mx-auto pb-24">
         <Link to={createPageUrl('Dashboard')} className="flex items-center text-sm text-gray-600 hover:text-gray-900">
             <ArrowLeft className="w-4 h-4 mr-1" />
             Back to Dashboard

@@ -164,7 +164,7 @@ function SubmissionReviewContent() {
   // Show error state if no campaign ID
   if (!campaignId) {
     return (
-      <div className="min-h-screen bg-gray-50 p-4">
+      <div className="bg-gray-50 p-4">
         <div className="max-w-2xl mx-auto">
           <Card className="border-red-200 bg-red-50">
             <CardContent className="p-6 text-center">
@@ -189,7 +189,7 @@ function SubmissionReviewContent() {
   // Show loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="flex items-center justify-center p-4 py-16">
         <Card className="w-full max-w-md">
           <CardContent className="p-6 text-center">
             <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[var(--cashlap-blue)]" />
@@ -204,7 +204,7 @@ function SubmissionReviewContent() {
   // Show error state when the campaign itself failed to load or is not found
   if (error && !campaign) {
     return (
-      <div className="min-h-screen bg-gray-50 p-4">
+      <div className="bg-gray-50 p-4">
         <div className="max-w-2xl mx-auto">
           <Card className="border-red-200 bg-red-50">
             <CardContent className="p-6 text-center">
@@ -231,26 +231,21 @@ function SubmissionReviewContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 pb-24">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="bg-gray-50 p-4 pb-24">
+      <div className="max-w-2xl mx-auto space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <div className="flex items-center gap-2 mb-2">
-              <Link to={createPageUrl('CampaignManager')}>
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="w-4 h-4 mr-1" />
-                  Back
-                </Button>
-              </Link>
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900">Submission Review</h1>
-            <p className="text-sm text-gray-600 mt-1">
-              Review and approve player submissions for your campaigns.
-            </p>
+            <Link to={createPageUrl('CampaignManager')}>
+              <Button variant="ghost" size="sm" className="mb-1 -ml-2">
+                <ArrowLeft className="w-4 h-4 mr-1" />
+                Back
+              </Button>
+            </Link>
+            <h1 className="text-xl font-bold text-gray-900 leading-tight">Submission Review</h1>
             {campaign && (
-              <p className="text-gray-600 mt-1 break-words">
-                Campaign: <span className="font-medium">{campaign.title}</span>
+              <p className="text-sm text-gray-600 mt-0.5 break-words">
+                <span className="font-medium">{campaign.title}</span>
               </p>
             )}
           </div>
@@ -259,9 +254,9 @@ function SubmissionReviewContent() {
             variant="outline"
             size="sm"
             disabled={loading}
+            className="flex-shrink-0 mt-1"
           >
-            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
         </div>
 

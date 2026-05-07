@@ -285,7 +285,7 @@ function DashboardContent() {
   const rankProgress = user.account_type === 'player' ? getRankProgress() : null;
 
   return (
-    <div className="p-4 space-y-4 pb-24">
+    <div className="p-4 space-y-4 pb-24 max-w-lg mx-auto">
       {isVerifyingPayment && (
         <motion.div
           initial={{ opacity: 0, y: -20 }}

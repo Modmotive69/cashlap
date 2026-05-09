@@ -376,7 +376,7 @@ function DashboardContent() {
           <div className="flex items-start justify-between">
             <div>
               <h2 className="text-2xl font-bold text-white">
-                {business?.name || "Business Dashboard"}
+                {user.business_name || business?.name || "Business Dashboard"}
               </h2>
               <p className="text-blue-100 mt-1">
                 Manage your campaigns and track performance

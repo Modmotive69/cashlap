@@ -58,7 +58,8 @@ function ProfileContent() {
         display_name: currentUser.display_name || currentUser.full_name || '',
         bio: currentUser.bio || '',
         tiktok_handle: currentUser.social_handles?.tiktok || '',
-        instagram_handle: currentUser.social_handles?.instagram || ''
+        instagram_handle: currentUser.social_handles?.instagram || '',
+        business_name: currentUser.business_name || ''
       });
 
       if (currentUser.account_type === 'player') {
@@ -84,7 +85,8 @@ function ProfileContent() {
           ...(user.social_handles || {}),
           tiktok: formData.tiktok_handle,
           instagram: formData.instagram_handle
-        }
+        },
+        ...(user.account_type === 'business' && { business_name: formData.business_name })
       });
       await User.updateMyUserData(dataToUpdate);
 
@@ -104,7 +106,8 @@ function ProfileContent() {
       display_name: user.display_name || user.full_name || '',
       bio: user.bio || '',
       tiktok_handle: user.social_handles?.tiktok || '',
-      instagram_handle: user.social_handles?.instagram || ''
+      instagram_handle: user.social_handles?.instagram || '',
+      business_name: user.business_name || ''
     });
   };
 
@@ -374,6 +377,18 @@ function ProfileContent() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {user.account_type === 'business' && (
+            <div>
+              <label className="block text-sm sm:text-base font-medium mb-2 text-gray-800">Business Name</label>
+              <Input
+                value={formData.business_name}
+                onChange={(e) => setFormData({...formData, business_name: e.target.value})}
+                placeholder="Enter your business name"
+                className="text-base border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+          )}
+
           <div>
             <label className="block text-sm sm:text-base font-medium mb-2 text-gray-800">Display Name</label>
             <Input

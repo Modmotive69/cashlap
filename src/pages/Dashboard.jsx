@@ -368,7 +368,9 @@ function DashboardContent() {
         style={{
           background: user.account_type === 'business'
             ? 'var(--cashlap-blue)'
-            : `linear-gradient(135deg, ${rankData.color} 0%, #4a5568 100%)`
+            : user.tiktok_id
+              ? `linear-gradient(135deg, ${rankData.color} 0%, #4a5568 100%)`
+              : 'linear-gradient(135deg, #4a5568 0%, #2d3748 100%)'
         }}
       >
         {user.account_type === 'business' ? (
@@ -385,12 +387,30 @@ function DashboardContent() {
             <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/8a050254a_20250612_0908_TranslucentGreenCube_remix_01jxj7f9waej1th5v95nhpaa9t.png" alt="CASH Mascot" className="w-20 h-20 object-contain" />
           </div>
         ) : (
-          // Player Card - Redesigned for Influencer Rank
+          // Player Card - Influencer Rank
           <div>
-            <div className="flex justify-between items-start">
-              <div className="flex-1">
-                <h2 className="text-2xl font-bold text-white leading-tight">{user.display_name || user.full_name}</h2>
-                <div className="flex items-center gap-3 mt-1">
+            <h2 className="text-2xl font-bold text-white leading-tight mb-3">{user.display_name || user.full_name}</h2>
+
+            {!user.tiktok_id ? (
+              // No TikTok linked — prompt user
+              <div className="bg-white/10 rounded-xl p-4 flex flex-col gap-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl">🎵</span>
+                  <div>
+                    <p className="text-white font-semibold text-sm leading-tight">No Influencer Rank Yet</p>
+                    <p className="text-white/70 text-xs leading-snug mt-0.5">Link your TikTok account to receive your Influencer Rank and unlock reward multipliers.</p>
+                  </div>
+                </div>
+                <Link to={createPageUrl("Profile")} className="w-full">
+                  <button className="w-full bg-white text-gray-900 font-semibold text-sm py-2 rounded-lg hover:bg-white/90 transition-colors">
+                    Link TikTok Account
+                  </button>
+                </Link>
+              </div>
+            ) : (
+              // TikTok linked — show rank
+              <>
+                <div className="flex items-center gap-3">
                   <span className="text-3xl">{rankData.emoji}</span>
                   <div>
                     <h3 className="text-xl font-bold text-white leading-tight">{rankData.name}</h3>
@@ -398,39 +418,39 @@ function DashboardContent() {
                   </div>
                 </div>
                 <p className="text-xs text-white/70 mt-2 max-w-[280px]">{rankData.description}</p>
-              </div>
-            </div>
 
-            <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-              <div className="bg-white/10 p-2 rounded-lg">
-                <Coins className="w-4 h-4 mx-auto text-yellow-300 mb-1" />
-                <p className="text-lg font-bold">${(user?.total_earnings || 0).toFixed(2)}</p>
-                <p className="text-[10px] uppercase tracking-wider text-white/70">Earned</p>
-              </div>
-              <div className="bg-white/10 p-2 rounded-lg">
-                <Zap className="w-4 h-4 mx-auto text-pink-300 mb-1" />
-                <p className="text-lg font-bold">{rankData.multiplier}x</p>
-                <p className="text-[10px] uppercase tracking-wider text-white/70">Multiplier</p>
-              </div>
-              <div className="bg-white/10 p-2 rounded-lg">
-                <Users className="w-4 h-4 mx-auto text-blue-300 mb-1" />
-                <p className="text-lg font-bold">{(user.total_followers || 0).toLocaleString()}</p>
-                <p className="text-[10px] uppercase tracking-wider text-white/70">Followers</p>
-              </div>
-            </div>
+                <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+                  <div className="bg-white/10 p-2 rounded-lg">
+                    <Coins className="w-4 h-4 mx-auto text-yellow-300 mb-1" />
+                    <p className="text-lg font-bold">${(user?.total_earnings || 0).toFixed(2)}</p>
+                    <p className="text-[10px] uppercase tracking-wider text-white/70">Earned</p>
+                  </div>
+                  <div className="bg-white/10 p-2 rounded-lg">
+                    <Zap className="w-4 h-4 mx-auto text-pink-300 mb-1" />
+                    <p className="text-lg font-bold">{rankData.multiplier}x</p>
+                    <p className="text-[10px] uppercase tracking-wider text-white/70">Multiplier</p>
+                  </div>
+                  <div className="bg-white/10 p-2 rounded-lg">
+                    <Users className="w-4 h-4 mx-auto text-blue-300 mb-1" />
+                    <p className="text-lg font-bold">{(user.total_followers || 0).toLocaleString()}</p>
+                    <p className="text-[10px] uppercase tracking-wider text-white/70">Followers</p>
+                  </div>
+                </div>
 
-            <div className="mt-4 space-y-2">
-              <div className="flex items-center justify-between text-white text-xs">
-                <span>{rankProgress.isMaxRank ? 'Legend Status Achieved!' : `Road to ${rankProgress.nextRankName}`}</span>
-                {!rankProgress.isMaxRank && (
-                  <span>{rankProgress.current.toLocaleString()} / {rankProgress.target.toLocaleString()} Followers</span>
-                )}
-              </div>
-              <Progress
-                value={rankProgress.percentage}
-                className="h-2 bg-white/20 [&>div]:bg-white"
-              />
-            </div>
+                <div className="mt-4 space-y-2">
+                  <div className="flex items-center justify-between text-white text-xs">
+                    <span>{rankProgress.isMaxRank ? 'Legend Status Achieved!' : `Road to ${rankProgress.nextRankName}`}</span>
+                    {!rankProgress.isMaxRank && (
+                      <span>{rankProgress.current.toLocaleString()} / {rankProgress.target.toLocaleString()} Followers</span>
+                    )}
+                  </div>
+                  <Progress
+                    value={rankProgress.percentage}
+                    className="h-2 bg-white/20 [&>div]:bg-white"
+                  />
+                </div>
+              </>
+            )}
           </div>
         )}
       </motion.div>

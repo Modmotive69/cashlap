@@ -3,15 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Input } from '@/components/ui/input';
 import { syncAndRankInfluencer } from '@/functions/syncAndRankInfluencer';
 import { startTikTokOAuth } from '@/functions/startTikTokOAuth';
 import { unlinkTikTokAccount } from '@/functions/unlinkTikTokAccount';
-import { base44 } from '@/api/base44Client';
 import {
   Music, Crown, Loader2, RefreshCw, Link as LinkIcon,
-  CheckCircle, XCircle, TrendingUp, TrendingDown, Minus, User as UserIcon,
-  Instagram, Users
+  CheckCircle, XCircle, TrendingUp, TrendingDown, Minus, User as UserIcon
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
@@ -29,8 +26,6 @@ export default function InfluencerRankCard({ user, onUpdate }) {
   const [isLinking, setIsLinking] = useState(false);
   const [isUnlinking, setIsUnlinking] = useState(false);
   const [lastSyncGrowth, setLastSyncGrowth] = useState(null);
-  const [instagramInput, setInstagramInput] = useState('');
-  const [isSavingInstagram, setIsSavingInstagram] = useState(false);
 
   const handleSync = useCallback(async (isAutoSync = false) => {
     setIsSyncing(true);
@@ -102,44 +97,7 @@ export default function InfluencerRankCard({ user, onUpdate }) {
     }
   };
 
-  const handleSaveInstagram = async () => {
-    const count = parseInt(instagramInput.replace(/,/g, ''), 10);
-    if (isNaN(count) || count < 0) {
-      alert('Please enter a valid number of followers.');
-      return;
-    }
-    setIsSavingInstagram(true);
-    try {
-      const tiktokFollowers = user.tiktok_followers || 0;
-      const newTotal = tiktokFollowers + count;
-
-      // Recalculate rank
-      let newRank = 'rookie';
-      let newMultiplier = 1.0;
-      if (newTotal >= 10000000) { newRank = 'legend'; newMultiplier = 3.0; }
-      else if (newTotal >= 1000000) { newRank = 'icon'; newMultiplier = 2.0; }
-      else if (newTotal >= 100000) { newRank = 'vibe_curator'; newMultiplier = 1.5; }
-      else if (newTotal >= 10000) { newRank = 'trendsetter'; newMultiplier = 1.25; }
-
-      await base44.auth.updateMe({
-        instagram_followers: count,
-        total_followers: newTotal,
-        influencer_rank: newRank,
-        influencer_multiplier: newMultiplier,
-        followers_last_updated: new Date().toISOString(),
-      });
-
-      setInstagramInput('');
-      if (onUpdate) onUpdate();
-    } catch (error) {
-      console.error('Error saving Instagram followers:', error);
-      alert('Failed to save. Please try again.');
-    } finally {
-      setIsSavingInstagram(false);
-    }
-  };
-
-  const totalFollowers = user.total_followers || 0;
+  const totalFollowers = user.tiktok_followers || 0;
 
   // Recalculate rank dynamically from total_followers as source of truth
   const getDynamicRankKey = (followers) => {
@@ -300,66 +258,15 @@ export default function InfluencerRankCard({ user, onUpdate }) {
           </div>
         )}
 
-        {/* Platform Follower Breakdown */}
-        <div className="bg-gray-50 rounded-xl p-3 space-y-2">
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Followers by Platform</p>
-          
-          {/* TikTok row */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 bg-black rounded-full flex items-center justify-center flex-shrink-0">
-                <Music className="w-3.5 h-3.5 text-white" />
-              </div>
-              <span className="text-sm font-medium text-gray-700">TikTok</span>
-              {hasTikTokToken && <CheckCircle className="w-3.5 h-3.5 text-green-500" />}
+        {/* TikTok Follower Total */}
+        <div className="bg-gray-50 rounded-xl p-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 bg-black rounded-full flex items-center justify-center flex-shrink-0">
+              <Music className="w-3.5 h-3.5 text-white" />
             </div>
-            <span className="text-sm font-bold text-gray-900">{tiktokFollowers.toLocaleString()}</span>
+            <span className="text-sm font-medium text-gray-700">TikTok Followers</span>
           </div>
-
-          {/* Instagram row */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 bg-gradient-to-br from-pink-500 to-orange-400 rounded-full flex items-center justify-center flex-shrink-0">
-                <Instagram className="w-3.5 h-3.5 text-white" />
-              </div>
-              <span className="text-sm font-medium text-gray-700">Instagram</span>
-            </div>
-            <span className="text-sm font-bold text-gray-900">{(user.instagram_followers || 0).toLocaleString()}</span>
-          </div>
-
-          {/* Instagram manual entry */}
-          <div className="pt-1 border-t border-gray-200">
-            <p className="text-xs text-gray-400 mb-1.5">Update Instagram follower count manually:</p>
-            <div className="flex gap-2">
-              <Input
-                type="number"
-                placeholder="e.g. 12500"
-                value={instagramInput}
-                onChange={(e) => setInstagramInput(e.target.value)}
-                className="h-8 text-sm"
-                min="0"
-              />
-              <Button
-                size="sm"
-                onClick={handleSaveInstagram}
-                disabled={isSavingInstagram || !instagramInput}
-                className="h-8 px-3 bg-gradient-to-r from-pink-500 to-orange-400 text-white hover:opacity-90 flex-shrink-0"
-              >
-                {isSavingInstagram ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Save'}
-              </Button>
-            </div>
-          </div>
-
-          {/* Total */}
-          <div className="flex items-center justify-between pt-1 border-t border-gray-200">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <Users className="w-3.5 h-3.5 text-purple-600" />
-              </div>
-              <span className="text-sm font-semibold text-gray-800">Total</span>
-            </div>
-            <span className="text-sm font-bold text-gray-900">{totalFollowers.toLocaleString()}</span>
-          </div>
+          <span className="text-sm font-bold text-gray-900">{totalFollowers.toLocaleString()}</span>
         </div>
 
         {/* Progress to next rank */}

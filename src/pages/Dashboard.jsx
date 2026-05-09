@@ -280,8 +280,15 @@ function DashboardContent() {
   const activeMissions = missions.filter(m => m.status === 'active');
   const recentMissions = missions.filter(m => ['approved', 'rejected'].includes(m.status)).slice(0, 3);
   
-  // Get influencer rank data for the player
-  const rankData = user.account_type === 'player' ? (INFLUENCER_TIERS[user.influencer_rank || 'rookie']) : null;
+  // Get influencer rank data for the player — recalculate dynamically from total_followers as source of truth
+  const getDynamicRank = (totalFollowers) => {
+    for (const [key, tier] of Object.entries(INFLUENCER_TIERS)) {
+      if (totalFollowers >= tier.minFollowers && totalFollowers <= tier.maxFollowers) return { key, ...tier };
+    }
+    return { key: 'rookie', ...INFLUENCER_TIERS.rookie };
+  };
+  const dynamicRank = user.account_type === 'player' ? getDynamicRank(user.total_followers || 0) : null;
+  const rankData = user.account_type === 'player' ? (dynamicRank || INFLUENCER_TIERS[user.influencer_rank || 'rookie']) : null;
   const rankProgress = user.account_type === 'player' ? getRankProgress() : null;
 
   return (

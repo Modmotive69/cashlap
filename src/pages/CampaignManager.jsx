@@ -29,7 +29,7 @@ import {
   Clock,
   FileText,
   Check,
-  Briefcase // NEW IMPORT
+  Briefcase
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -44,9 +44,11 @@ import { sanitize, sanitizeObject } from "@/components/utils/sanitizer";
 import QRCodeGenerator from "@/components/qr/QRCodeGenerator";
 import CampaignAnalyticsDetail from "@/components/analytics/CampaignAnalyticsDetail";
 import { geocodeAddress } from "@/functions/geocodeAddress";
-import { increaseCampaignBudget } from "@/functions/increaseCampaignBudget"; // NEW IMPORT
+import { increaseCampaignBudget } from "@/functions/increaseCampaignBudget";
 
-import { rateLimiter } from '@/components/utils/rateLimiter'; // Correctly import the rateLimiter object
+import { rateLimiter } from '@/components/utils/rateLimiter';
+import { analytics } from '@/lib/analytics';
+import { captureError } from '@/lib/sentry';
 import { toast } from 'sonner';
 
 // Initial state for the campaign form
@@ -413,8 +415,11 @@ function CampaignForm({ businessId, onCampaignUpdated, existingCampaign, onCance
 
           if (existingCampaign) {
             await Campaign.update(existingCampaign.id, finalCampaignData);
+            if (finalCampaignData.status === 'active') analytics.campaignActivated(existingCampaign.id);
           } else {
-            await Campaign.create(finalCampaignData);
+            const created = await Campaign.create(finalCampaignData);
+            analytics.campaignCreated(created?.id, finalCampaignData.budget);
+            if (finalCampaignData.status === 'active') analytics.campaignActivated(created?.id);
           }
 
           submissionSuccess = true;
@@ -655,8 +660,6 @@ const useCampaignData = () => {
       // Attempt 1: Fetch by business_id if available
       if (currentUser.business_id) {
         try {
-          // Add small delay before first attempt to avoid immediate rate limit if previous action was recent
-          await new Promise(resolve => setTimeout(resolve, 500)); 
           const campaignsByBusinessId = await Campaign.filter({ business_id: currentUser.business_id }, '-created_date');
           fetchedCampaigns.push(...campaignsByBusinessId);
           attempt1Success = true;
@@ -664,9 +667,6 @@ const useCampaignData = () => {
           console.warn("Error filtering campaigns by business_id (Attempt 1, continuing recovery):", err);
         }
       }
-
-      // Add small delay between requests to avoid rate limiting
-      await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Attempt 2: Fetch all (or a limited list) and filter by created_by email as a fallback/catch-all
       try {
@@ -691,8 +691,6 @@ const useCampaignData = () => {
       // Aggressive recovery check: If both primary attempts failed to retrieve any data
       if (!attempt1Success && !attempt2Success && userCampaigns.length === 0 && currentUser.business_id) { // Only try if user has a business_id
           try {
-              // Add delay before third attempt
-              await new Promise(resolve => setTimeout(resolve, 1500));
               // Attempt 3: Fetch with higher limit as a final fallback
               const widerSystemCampaigns = await Campaign.list('-created_date', 500); // Increased limit for aggressive recovery
               const widerCampaignsByEmail = widerSystemCampaigns.filter(campaign => 
@@ -725,9 +723,6 @@ const useCampaignData = () => {
 
       // IMPORTANT: Set campaigns state immediately after validation
       setCampaigns(validatedCampaigns);
-
-      // Add delay before fetching submission counts
-      await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Get submission counts
       let counts = {};
@@ -1155,7 +1150,7 @@ function CampaignManager() { // Renamed from CampaignManagerContent
       }
 
       if (successfulDeletions > 0) {
-        toast.error(`Successfully deleted ${successfulDeletions} campaign(s).${failedDeletions > 0 ? ` ${failedDeletions} deletion(s) failed.` : ''}`);
+        toast.success(`Successfully deleted ${successfulDeletions} campaign(s).${failedDeletions > 0 ? ` ${failedDeletions} deletion(s) failed.` : ''}`);
         rateLimiter.clearCache(); // Use the rateLimiter object
         await refreshCampaigns(true);
       } else {

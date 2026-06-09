@@ -1,3 +1,5 @@
+import { captureError } from '@/lib/sentry';
+import { analytics } from '@/lib/analytics';
 import { useState, useEffect, useCallback } from "react";
 import { User, Mission, Business, Campaign } from "@/entities/all";
 
@@ -23,17 +25,19 @@ export function useDashboard() {
         currentUser.total_followers = 0;
       }
       setUser(currentUser);
+      // Return user so callers can inspect freshly-fetched data without a second User.me() call
+      return currentUser;
 
       if (currentUser.account_type === 'business') {
         if (currentUser.business_id) {
           try {
             const businesses = await Business.filter({ id: currentUser.business_id });
             if (businesses?.length > 0) setBusiness(businesses[0]);
-          } catch {}
+          } catch (e) { captureError(e, { context: 'useDashboard.loadBusiness' }); }
           try {
             const campaignList = await Campaign.filter({ business_id: currentUser.business_id }, '-created_date', 5);
             setCampaigns(campaignList);
-          } catch { setCampaigns([]); }
+          } catch (e) { captureError(e, { context: 'useDashboard.loadCampaigns' }); setCampaigns([]); }
         }
       } else {
         try {
@@ -46,7 +50,7 @@ export function useDashboard() {
             bizList.forEach(b => { bizMap[b.id] = b.name; });
             setMissionBusinesses(bizMap);
           }
-        } catch { setMissions([]); }
+        } catch (e) { captureError(e, { context: 'useDashboard.loadMissions' }); setMissions([]); }
       }
     } catch (err) {
       console.error("Error loading dashboard data:", err);
@@ -68,10 +72,11 @@ export function useDashboard() {
       const pollForBalanceUpdate = async (prevBalance) => {
         attempts++;
         try {
-          await loadData(true);
-          const freshUser = await User.me();
+          // loadData returns the freshly-fetched user — no second User.me() call needed
+          const freshUser = await loadData(true);
           const newBalance = freshUser?.business_balance ?? freshUser?.total_earnings ?? null;
           if (newBalance !== null && newBalance !== prevBalance) {
+            analytics.paymentSuccess(newBalance - (prevBalance || 0));
             setIsVerifyingPayment(false);
             return;
           }

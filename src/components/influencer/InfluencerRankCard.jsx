@@ -13,6 +13,7 @@ import {
 import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
 const INFLUENCER_TIERS = {
   rookie:      { name: 'Rookie',       subtitle: 'Nano',     emoji: '🐣', description: 'Just starting their rise to fame.',              minFollowers: 0,        maxFollowers: 9999,     multiplier: 1.0,  color: '#94A3B8' },
@@ -27,6 +28,7 @@ export default function InfluencerRankCard({ user, onUpdate }) {
   const [isLinking, setIsLinking] = useState(false);
   const [isUnlinking, setIsUnlinking] = useState(false);
   const [lastSyncGrowth, setLastSyncGrowth] = useState(null);
+  const [showUnlinkDialog, setShowUnlinkDialog] = useState(false);
 
   const handleSync = useCallback(async (isAutoSync = false) => {
     setIsSyncing(true);
@@ -78,23 +80,22 @@ export default function InfluencerRankCard({ user, onUpdate }) {
     }
   };
 
-  const handleUnlink = async () => {
-    if (window.confirm("Are you sure you want to unlink your TikTok account? Your follower count will be removed and your rank recalculated.")) {
-      setIsUnlinking(true);
-      try {
-        const response = await unlinkTikTokAccount();
-        if (response.data?.success) {
-          setLastSyncGrowth(null);
-          if (onUpdate) onUpdate();
-        } else {
-          throw new Error(response.data?.error || 'Failed to unlink account.');
-        }
-      } catch (error) {
-        console.error("Error unlinking TikTok:", error);
-        toast.error(`Failed to unlink TikTok: ${error.message}`);
-      } finally {
-        setIsUnlinking(false);
+  const handleUnlink = () => setShowUnlinkDialog(true);
+
+  const executeUnlink = async () => {
+    setIsUnlinking(true);
+    try {
+      const response = await unlinkTikTokAccount();
+      if (response.data?.success) {
+        setLastSyncGrowth(null);
+        if (onUpdate) onUpdate();
+      } else {
+        throw new Error(response.data?.error || 'Failed to unlink account.');
       }
+    } catch (error) {
+      toast.error(`Failed to unlink TikTok: ${error.message}`);
+    } finally {
+      setIsUnlinking(false);
     }
   };
 
@@ -136,6 +137,7 @@ export default function InfluencerRankCard({ user, onUpdate }) {
   const progress = getProgressToNextRank();
 
   return (
+    <>
     <Card className="overflow-hidden">
       <CardHeader className="pb-3" style={{ background: `linear-gradient(135deg, ${rankData.color}15, ${rankData.color}05)` }}>
         <div className="flex items-center justify-between">
@@ -320,5 +322,16 @@ export default function InfluencerRankCard({ user, onUpdate }) {
         </div>
       </CardContent>
     </Card>
+
+    <ConfirmDialog
+      open={showUnlinkDialog}
+      title="Unlink TikTok Account"
+      description="Your follower count will be removed and your influencer rank will be recalculated. Are you sure?"
+      confirmLabel="Unlink"
+      variant="destructive"
+      onConfirm={() => { setShowUnlinkDialog(false); executeUnlink(); }}
+      onCancel={() => setShowUnlinkDialog(false)}
+    />
+    </>
   );
 }

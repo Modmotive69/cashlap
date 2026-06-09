@@ -5,7 +5,10 @@ import * as Sentry from '@sentry/react'
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import VisualEditAgent from '@/lib/VisualEditAgent'
+import { lazy } from 'react'
+const VisualEditAgent = import.meta.env.VITE_ENABLE_VISUAL_EDIT === 'true'
+  ? lazy(() => import('@/lib/VisualEditAgent'))
+  : () => null
 import NavigationTracker from '@/lib/NavigationTracker'
 import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';

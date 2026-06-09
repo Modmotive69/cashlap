@@ -20,7 +20,7 @@ import {
   Shield,
   Loader2,
   Database,
-  AlertTriangle // Added for the new admin button
+  AlertTriangle
 } from "lucide-react";
 import { motion } from "framer-motion";
 import ReferralCard from "@/components/profile/ReferralCard";
@@ -29,9 +29,10 @@ import { Link } from "react-router-dom";
 import { sanitizeObject } from "@/components/utils/sanitizer";
 import { clearAllPlayerBalances } from "@/functions/clearAllPlayerBalances";
 import { debugBusinessBalance } from "@/functions/debugBusinessBalance";
-import { deleteAllCampaigns } from "@/functions/deleteAllCampaigns"; // New import
+import { deleteAllCampaigns } from "@/functions/deleteAllCampaigns";
 import AuthGuard from "@/components/auth/AuthGuard";
 import { toast } from 'sonner';
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 function ProfileContent() {
   const [user, setUser] = useState(null);
@@ -44,8 +45,10 @@ function ProfileContent() {
   const [clearMessage, setClearMessage] = useState('');
   const [isDebugging, setIsDebugging] = useState(false);
   const [debugMessage, setDebugMessage] = useState('');
-  const [isDeletingAllCampaigns, setIsDeletingAllCampaigns] = useState(false); // New state
-  const [deleteAllCampaignsMessage, setDeleteAllCampaignsMessage] = useState(''); // New state
+  const [isDeletingAllCampaigns, setIsDeletingAllCampaigns] = useState(false);
+  const [deleteAllCampaignsMessage, setDeleteAllCampaignsMessage] = useState('');
+  // ConfirmDialog state
+  const [confirmDialog, setConfirmDialog] = useState(null); // { type, payload }
 
   useEffect(() => {
     loadData();
@@ -113,20 +116,15 @@ function ProfileContent() {
   };
 
   const handleRestartOnboarding = async () => {
-    if (window.confirm("Are you sure you want to restart the setup process? This will take you back to the onboarding screen to re-select your account type and preferences.")) {
-      try {
-        await User.updateMyUserData({ onboarding_completed: false });
-        window.location.href = createPageUrl('Onboarding');
-      } catch (error) {
-        console.error("Error restarting onboarding:", error);
-        toast.error("Failed to restart onboarding. Please try again.");
-      }
-    }
+    setConfirmDialog({ type: 'restart_onboarding' });
   };
 
   const handleSwitchAccountType = async () => {
     const newAccountType = user.account_type === 'player' ? 'business' : 'player';
-    if (window.confirm(`Are you sure you want to switch to your ${newAccountType} account? Your dashboard will reload to apply the changes.`)) {
+    setConfirmDialog({ type: 'switch_account', payload: { newAccountType } });
+  };
+
+  const executeSwitchAccountType = async (newAccountType) => {
       setIsSwitching(true);
       try {
         const updateData = {
@@ -201,11 +199,13 @@ function ProfileContent() {
       } finally {
         setIsSwitching(false);
       }
-    }
   };
 
   const handleClearBalances = async () => {
-    if (window.confirm("DANGER: This will reset ALL player earnings balances to $0.00. This action cannot be undone. Are you sure you want to proceed?")) {
+    setConfirmDialog({ type: 'clear_balances' });
+  };
+
+  const executeClearBalances = async () => {
         setIsClearing(true);
         setClearMessage('');
         try {
@@ -224,7 +224,6 @@ function ProfileContent() {
         } finally {
             setIsClearing(false);
         }
-    }
   };
 
   const handleDebugBusinessBalance = async () => {
@@ -255,31 +254,11 @@ function ProfileContent() {
     }
   };
 
-  const handleDeleteAllCampaigns = async () => {
-    const confirmMessage = "⚠️ DANGER: This will permanently delete ALL campaigns and related data from the entire CashLap platform.\n\n" +
-                          "This includes:\n" +
-                          "• All campaigns from all businesses\n" +
-                          "• All missions and submissions\n" +
-                          "• All QR codes\n" +
-                          "• All check-ins\n" +
-                          "• Related notifications\n\n" +
-                          "THIS ACTION CANNOT BE UNDONE.\n\n" +
-                          "Are you absolutely sure you want to proceed?";
+  const handleDeleteAllCampaigns = () => {
+    setConfirmDialog({ type: 'delete_all_campaigns' });
+  };
 
-    if (!window.confirm(confirmMessage)) {
-      return;
-    }
-
-    // Double confirmation for such a destructive action
-    const finalConfirm = window.prompt(
-      "To confirm this action, please type 'DELETE ALL CAMPAIGNS' exactly:"
-    );
-
-    if (finalConfirm !== 'DELETE ALL CAMPAIGNS') {
-      toast.success('Action cancelled. The text did not match exactly.');
-      return;
-    }
-
+  const executeDeleteAllCampaigns = async () => {
     setIsDeletingAllCampaigns(true);
     setDeleteAllCampaignsMessage('');
 
@@ -347,6 +326,7 @@ function ProfileContent() {
   const stats = user.account_type === 'player' ? getPlayerStats() : null;
 
   return (
+    <>
     <div className="p-4 space-y-6 pb-24 max-w-lg mx-auto">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -612,6 +592,50 @@ function ProfileContent() {
         </CardContent>
       </Card>
     </div>
+
+    {/* Confirm dialogs — replaces all window.confirm/prompt */}
+    <ConfirmDialog
+      open={confirmDialog?.type === 'restart_onboarding'}
+      title="Restart Setup"
+      description="Are you sure you want to restart the setup process? This will take you back to onboarding to re-select your account type and preferences."
+      confirmLabel="Restart"
+      onConfirm={async () => {
+        setConfirmDialog(null);
+        try {
+          await User.updateMyUserData({ onboarding_completed: false });
+          window.location.href = createPageUrl('Onboarding');
+        } catch { toast.error('Failed to restart onboarding. Please try again.'); }
+      }}
+      onCancel={() => setConfirmDialog(null)}
+    />
+    <ConfirmDialog
+      open={confirmDialog?.type === 'switch_account'}
+      title={`Switch to ${confirmDialog?.payload?.newAccountType === 'business' ? 'Business' : 'Player'} Account`}
+      description={`Switch to your ${confirmDialog?.payload?.newAccountType} account? The app will reload.`}
+      confirmLabel="Switch"
+      onConfirm={() => { const t = confirmDialog?.payload?.newAccountType; setConfirmDialog(null); executeSwitchAccountType(t); }}
+      onCancel={() => setConfirmDialog(null)}
+    />
+    <ConfirmDialog
+      open={confirmDialog?.type === 'clear_balances'}
+      title="Reset All Player Balances"
+      description="DANGER: This will reset ALL player earnings to $0.00 platform-wide. This cannot be undone."
+      confirmLabel="Reset Balances"
+      variant="destructive"
+      onConfirm={() => { setConfirmDialog(null); executeClearBalances(); }}
+      onCancel={() => setConfirmDialog(null)}
+    />
+    <ConfirmDialog
+      open={confirmDialog?.type === 'delete_all_campaigns'}
+      title="Delete ALL Campaigns"
+      description={`⚠️ This will permanently delete every campaign, mission, QR code, check-in, and notification on the entire platform.\n\nTHIS CANNOT BE UNDONE.`}
+      confirmLabel="Delete Everything"
+      variant="destructive"
+      confirmPhrase="DELETE ALL CAMPAIGNS"
+      onConfirm={() => { setConfirmDialog(null); executeDeleteAllCampaigns(); }}
+      onCancel={() => setConfirmDialog(null)}
+    />
+    </>
   );
 }
 

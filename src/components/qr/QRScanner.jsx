@@ -3,10 +3,13 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { validateAndProcessCheckIn } from '@/functions/validateAndProcessCheckIn';
+import { analytics } from '@/lib/analytics';
 import { X, Camera, AlertTriangle, Loader2, RefreshCw, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function QRScanner({ campaign, user, onCheckInSuccess, onClose }) {
+  // Track QR scan start on mount
+  // (moved inside useEffect in the requesting_camera state transition)
   const [status, setStatus] = useState('initializing'); // initializing -> requesting_location -> requesting_camera -> scanning -> processing -> error
   const [error, setError] = useState('');
   const [userLocation, setUserLocation] = useState(null);
@@ -54,6 +57,7 @@ export default function QRScanner({ campaign, user, onCheckInSuccess, onClose })
       });
       
       if (result.data?.success && result.data.mission) {
+        analytics.qrScanSuccess(campaign?.id, result.data.mission?.id);
         onCheckInSuccess(result.data.mission);
       } else {
         setError(result.data?.error || 'Check-in failed. Please try again.');

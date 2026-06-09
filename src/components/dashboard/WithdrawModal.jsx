@@ -7,6 +7,7 @@ import NumericKeypad from '@/components/keypad/NumericKeypad';
 import { processStripeWithdrawal } from "@/functions/processStripeWithdrawal";
 import { createPageUrl } from '@/utils';
 import WithdrawSuccessPanel from './WithdrawSuccessPanel';
+import { analytics } from '@/lib/analytics';
 
 export default function WithdrawModal({ user, onClose, onSuccess }) {
   const [amount, setAmount] = useState('');
@@ -66,6 +67,7 @@ export default function WithdrawModal({ user, onClose, onSuccess }) {
       return;
     }
 
+    analytics.withdrawInitiated(withdrawAmount);
     setIsProcessing(true);
     setError(null);
     setNeedsOnboarding(false);
@@ -74,6 +76,7 @@ export default function WithdrawModal({ user, onClose, onSuccess }) {
       const result = await processStripeWithdrawal({ amount: withdrawAmount });
 
       if (result?.data?.success) {
+        analytics.withdrawSuccess(withdrawAmount);
         setWithdrawnAmount(withdrawAmount);
         setNewBalance(result.data.newBalance);
         setShowSuccessPanel(true);

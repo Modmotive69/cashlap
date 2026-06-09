@@ -19,8 +19,10 @@ import {
 import { createPageUrl } from "@/utils";
 import SuccessModal from "@/components/mission/SuccessModal";
 import { motion, AnimatePresence } from "framer-motion";
-import { completeMission } from "@/functions/completeMission"; // Added import
-import { sanitize } from "@/components/utils/sanitizer"; // Import sanitizer
+import { completeMission } from '@/functions/completeMission';
+import { sanitize } from '@/components/utils/sanitizer';
+import { analytics } from '@/lib/analytics';
+import { captureError } from '@/lib/sentry';
 
 export default function CameraCapture() {
   const [mission, setMission] = useState(null);
@@ -32,7 +34,6 @@ export default function CameraCapture() {
   const [reviewText, setReviewText] = useState("");
   const [rating, setRating] = useState(0);
   const [submitting, setSubmitting] = useState(false); // Renamed from submitting to isSubmitting in outline, but keeping 'submitting' for consistency with `processingSubmission`
-  const [processingSubmission, setProcessingSubmission] = useState(false);
   const [loading, setLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState('capture');
   const [isRecording, setIsRecording] = useState(false);
@@ -301,7 +302,6 @@ export default function CameraCapture() {
     if (submitting) return; // Prevent double submission
 
     setSubmitting(true);
-    setProcessingSubmission(true);
     setError('');
     
     try {
@@ -338,6 +338,7 @@ export default function CameraCapture() {
       const response = await completeMission(submissionDetails);
 
       if (response.success) {
+        analytics.missionSubmitted(mission?.id, mission?.reward_amount);
         setSubmittedData({
           reward: response.reward,
           xpGained: response.xpGained,
@@ -345,19 +346,17 @@ export default function CameraCapture() {
           newLevel: response.newLevel,
           missionTitle: response.missionTitle
         });
-        console.log("Mission completion successful, showing success modal with data:", submittedData);
         setShowSuccessModal(true);
       } else {
         throw new Error(response.error || 'Failed to complete mission.');
       }
 
     } catch (err) {
-      console.error("Submission error:", err);
+      captureError(err, { context: 'CameraCapture.handleMissionSubmission', missionId: mission?.id });
       setError(`Submission failed: ${err.message}. Please check your connection and try again.`);
     } finally {
       setSubmitting(false);
-      setProcessingSubmission(false);
-    }
+      }
   };
 
   const handleTouchStart = (e) => {

@@ -13,6 +13,7 @@ import NavigationTracker from '@/lib/NavigationTracker'
 import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
+import { Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
@@ -72,6 +73,8 @@ const AuthenticatedApp = () => {
           }
         />
       ))}
+      {/* Base44 redirects to /login — map it to our SignIn page */}
+      <Route path="/login" element={<Navigate to="/SignIn" replace />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

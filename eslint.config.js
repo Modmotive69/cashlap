@@ -35,6 +35,15 @@ export default [
     },
     rules: {
       "no-unused-vars": "off",
+      // Ban browser-native dialogs — use toast() or ConfirmDialog instead
+      "no-restricted-globals": [
+        "error",
+        { "name": "alert", "message": "Use toast.success/error from 'sonner' instead." },
+        { "name": "confirm", "message": "Use ConfirmDialog from '@/components/ui/ConfirmDialog' instead." },
+        { "name": "prompt", "message": "Use ConfirmDialog with confirmPhrase prop instead." },
+      ],
+      // Ban console.* in src/ — use captureError() from '@/lib/sentry' for errors
+      "no-console": ["warn", { "allow": ["warn", "error"] }],
       "react/jsx-uses-vars": "error",
       "unused-imports/no-unused-imports": "error",
       "unused-imports/no-unused-vars": [

@@ -38,11 +38,18 @@ export default defineConfig({
     },
   ],
 
-  // Start dev server automatically for local runs
-  webServer: {
-    command: `BASE44_LEGACY_SDK_IMPORTS=true npm run dev`,
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000,
-  },
+  // In CI: serve pre-built dist. Locally: use dev server.
+  webServer: process.env.CI
+    ? {
+        command: 'npx serve dist -p 4173',
+        url: 'http://localhost:4173',
+        reuseExistingServer: false,
+        timeout: 30000,
+      }
+    : {
+        command: 'BASE44_LEGACY_SDK_IMPORTS=true npm run dev',
+        url: 'http://localhost:5173',
+        reuseExistingServer: true,
+        timeout: 120000,
+      },
 });

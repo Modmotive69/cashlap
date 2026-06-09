@@ -1,6 +1,7 @@
 import './App.css'
 import { Suspense } from 'react'
 import { Loader2 } from 'lucide-react'
+import * as Sentry from '@sentry/react'
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
@@ -75,8 +76,14 @@ const AuthenticatedApp = () => {
 
 
 function App() {
-
   return (
+    <Sentry.ErrorBoundary fallback={
+      <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center">
+        <h2 className="text-xl font-bold text-gray-800 mb-2">Something went wrong</h2>
+        <p className="text-gray-500 mb-4">An unexpected error occurred. Our team has been notified.</p>
+        <button onClick={() => window.location.reload()} className="px-4 py-2 bg-black text-white rounded-lg text-sm">Reload App</button>
+      </div>
+    }>
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
@@ -87,6 +94,7 @@ function App() {
         <VisualEditAgent />
       </QueryClientProvider>
     </AuthProvider>
+    </Sentry.ErrorBoundary>
   )
 }
 

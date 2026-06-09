@@ -2,6 +2,8 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { appParams } from '@/lib/app-params';
 import { createAxiosClient } from '@base44/sdk/dist/utils/axios-client';
+import { identifyAnalyticsUser, resetAnalyticsUser, analytics } from '@/lib/analytics';
+import { identifyUser as identifySentryUser, clearSentryUser } from '@/lib/sentry';
 
 const AuthContext = createContext();
 
@@ -95,6 +97,10 @@ export const AuthProvider = ({ children }) => {
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
+      // Identify in analytics + error monitoring
+      identifyAnalyticsUser(currentUser);
+      identifySentryUser(currentUser);
+      analytics.signIn(currentUser);
     } catch (error) {
       console.error('User auth check failed:', error);
       setIsLoadingAuth(false);
@@ -113,6 +119,9 @@ export const AuthProvider = ({ children }) => {
   const logout = (shouldRedirect = true) => {
     setUser(null);
     setIsAuthenticated(false);
+    resetAnalyticsUser();
+    clearSentryUser();
+    analytics.signOut();
     
     if (shouldRedirect) {
       // Use the SDK's logout method which handles token cleanup and redirect

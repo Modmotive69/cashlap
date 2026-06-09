@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { QRCode } from '@/entities/all';
 import { QrCode, Download, MapPin, Plus, Trash2, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 import {
   Select,
   SelectContent,
@@ -35,13 +36,13 @@ export default function QRCodeGenerator({ campaign, user }) {
 
   const generateQRCode = async () => {
     if (selectedLocationIndex === null || selectedLocationIndex === undefined) {
-      alert('Please select a verified location for this QR code.');
+      toast.success('Please select a verified location for this QR code.');
       return;
     }
 
     const selectedLocation = campaign.locations[selectedLocationIndex];
     if (!selectedLocation || !selectedLocation.latitude || !selectedLocation.longitude) {
-      alert('The selected location is not verified. Please verify it in the campaign editor.');
+      toast.success('The selected location is not verified. Please verify it in the campaign editor.');
       return;
     }
 
@@ -65,7 +66,7 @@ export default function QRCodeGenerator({ campaign, user }) {
       setSelectedLocationIndex(null); // Reset selected location after generation
     } catch (error) {
       console.error('Error generating QR code:', error);
-      alert('Failed to generate QR code. Please try again.');
+      toast.error('Failed to generate QR code. Please try again.');
     } finally {
       setGenerating(false);
     }
@@ -81,7 +82,7 @@ export default function QRCodeGenerator({ campaign, user }) {
       ));
     } catch (error) {
       console.error('Error updating QR code status:', error);
-      alert('Failed to update QR code status.');
+      toast.error('Failed to update QR code status.');
     }
   };
 
@@ -95,7 +96,7 @@ export default function QRCodeGenerator({ campaign, user }) {
       setQrCodes(qrCodes.filter(qr => qr.id !== qrCodeId));
     } catch (error) {
       console.error('Error deleting QR code:', error);
-      alert('Failed to delete QR code.');
+      toast.error('Failed to delete QR code.');
     }
   };
 
@@ -122,7 +123,7 @@ export default function QRCodeGenerator({ campaign, user }) {
       window.URL.revokeObjectURL(objectUrl);
     } catch (error) {
       console.error('QR Code download failed:', error);
-      alert('Could not download the QR code. Please check your internet connection and try again.');
+      toast.error('Could not download the QR code. Please check your internet connection and try again.');
     }
   };
 

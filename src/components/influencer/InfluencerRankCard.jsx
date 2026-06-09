@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
+import { toast } from 'sonner';
 
 const INFLUENCER_TIERS = {
   rookie:      { name: 'Rookie',       subtitle: 'Nano',     emoji: '🐣', description: 'Just starting their rise to fame.',              minFollowers: 0,        maxFollowers: 9999,     multiplier: 1.0,  color: '#94A3B8' },
@@ -39,14 +40,14 @@ export default function InfluencerRankCard({ user, onUpdate }) {
         if (!isAutoSync) {
           const growth = response.data.tiktok_growth;
           const growthText = growth > 0 ? ` (+${growth.toLocaleString()} new followers!)` : growth < 0 ? ` (${growth.toLocaleString()})` : '';
-          alert(`Synced! TikTok: ${response.data.tiktok_followers?.toLocaleString()}${growthText}`);
+          toast.success(`Synced! TikTok: ${response.data.tiktok_followers?.toLocaleString()}${growthText}`);
         }
       } else {
         throw new Error(response.data?.error || 'Failed to sync');
       }
     } catch (error) {
       console.error('Error syncing followers:', error);
-      alert('Failed to sync TikTok data. Please try again.');
+      toast.error('Failed to sync TikTok data. Please try again.');
     } finally {
       setIsSyncing(false);
     }
@@ -71,7 +72,7 @@ export default function InfluencerRankCard({ user, onUpdate }) {
       }
     } catch (error) {
       console.error('Error linking TikTok:', error);
-      alert('Failed to link TikTok account. Please try again.');
+      toast.error('Failed to link TikTok account. Please try again.');
     } finally {
       setIsLinking(false);
     }
@@ -90,7 +91,7 @@ export default function InfluencerRankCard({ user, onUpdate }) {
         }
       } catch (error) {
         console.error("Error unlinking TikTok:", error);
-        alert(`Failed to unlink TikTok: ${error.message}`);
+        toast.error(`Failed to unlink TikTok: ${error.message}`);
       } finally {
         setIsUnlinking(false);
       }

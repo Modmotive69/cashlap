@@ -31,6 +31,7 @@ import { clearAllPlayerBalances } from "@/functions/clearAllPlayerBalances";
 import { debugBusinessBalance } from "@/functions/debugBusinessBalance";
 import { deleteAllCampaigns } from "@/functions/deleteAllCampaigns"; // New import
 import AuthGuard from "@/components/auth/AuthGuard";
+import { toast } from 'sonner';
 
 function ProfileContent() {
   const [user, setUser] = useState(null);
@@ -92,12 +93,12 @@ function ProfileContent() {
 
       localStorage.removeItem('cached_user_data');
 
-      alert("Profile updated successfully!");
+      toast.success("Profile updated successfully!");
 
       window.location.reload();
     } catch (error) {
       console.error("Error updating profile:", error);
-      alert("Failed to update profile. Please try again.");
+      toast.error("Failed to update profile. Please try again.");
     }
   };
 
@@ -118,7 +119,7 @@ function ProfileContent() {
         window.location.href = createPageUrl('Onboarding');
       } catch (error) {
         console.error("Error restarting onboarding:", error);
-        alert("Failed to restart onboarding. Please try again.");
+        toast.error("Failed to restart onboarding. Please try again.");
       }
     }
   };
@@ -162,7 +163,7 @@ function ProfileContent() {
               console.log('Created new Business entity:', newBusiness.id);
             } catch (businessError) {
               console.error('Failed to create Business entity:', businessError);
-              alert('Failed to create business profile. Please try again or contact support.');
+              toast.error('Failed to create business profile. Please try again or contact support.');
               setIsSwitching(false);
               return;
             }
@@ -191,12 +192,12 @@ function ProfileContent() {
         localStorage.removeItem('cached_user_data');
 
         // Reload the application to the dashboard to reflect the new account type
-        alert(`Switched to ${newAccountType} account. The app will now reload.`);
+        toast.success(`Switched to ${newAccountType} account. The app will now reload.`);
         window.location.href = createPageUrl('Dashboard');
 
       } catch (error) {
         console.error("Error switching account type:", error.response?.data || error);
-        alert("Failed to switch account type. Please try again or contact support.");
+        toast.error("Failed to switch account type. Please try again or contact support.");
       } finally {
         setIsSwitching(false);
       }
@@ -211,7 +212,7 @@ function ProfileContent() {
             const { data } = await clearAllPlayerBalances();
             if (data.success) {
                 setClearMessage(data.message);
-                alert('Success: ' + data.message);
+                toast.success('Success: ' + data.message);
                 loadData(); 
             } else {
                 throw new Error(data.error || 'Failed to clear balances.');
@@ -219,7 +220,7 @@ function ProfileContent() {
         } catch (error) {
             const errorMessage = error.response?.data?.error || error.message || 'An unknown error occurred.';
             setClearMessage(`Error: ${errorMessage}`);
-            alert(`Error: ${errorMessage}`);
+            toast.error(`Error: ${errorMessage}`);
         } finally {
             setIsClearing(false);
         }
@@ -240,7 +241,7 @@ function ProfileContent() {
       
       if (data.success) {
         setDebugMessage(`Success: ${data.message}. Old: $${data.old_balance}, New: $${data.new_balance}`);
-        alert('Debug successful! Check console for details. Refreshing page...');
+        toast.success('Debug successful! Check console for details. Refreshing page...');
         setTimeout(() => window.location.reload(), 1000);
       } else {
         throw new Error(data.error || 'Debug failed');
@@ -248,7 +249,7 @@ function ProfileContent() {
     } catch (error) {
       const errorMessage = error.response?.data?.error || error.message || 'Debug function failed';
       setDebugMessage(`Error: ${errorMessage}`);
-      alert(`Debug Error: ${errorMessage}`);
+      toast.error(`Debug Error: ${errorMessage}`);
     } finally {
       setIsDebugging(false);
     }
@@ -275,7 +276,7 @@ function ProfileContent() {
     );
 
     if (finalConfirm !== 'DELETE ALL CAMPAIGNS') {
-      alert('Action cancelled. The text did not match exactly.');
+      toast.success('Action cancelled. The text did not match exactly.');
       return;
     }
 
@@ -295,14 +296,14 @@ function ProfileContent() {
                        `\nTotal records deleted: ${data.total_records_deleted}`;
         
         setDeleteAllCampaignsMessage(data.message);
-        alert(summary);
+        toast.success(summary);
       } else {
         throw new Error(data.error || 'Failed to delete campaigns.');
       }
     } catch (error) {
       const errorMessage = error.response?.data?.error || error.message || 'An unknown error occurred.';
       setDeleteAllCampaignsMessage(`Error: ${errorMessage}`);
-      alert(`Error: ${errorMessage}`);
+      toast.error(`Error: ${errorMessage}`);
     } finally {
       setIsDeletingAllCampaigns(false);
     }

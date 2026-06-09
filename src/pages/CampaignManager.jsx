@@ -47,6 +47,7 @@ import { geocodeAddress } from "@/functions/geocodeAddress";
 import { increaseCampaignBudget } from "@/functions/increaseCampaignBudget"; // NEW IMPORT
 
 import { rateLimiter } from '@/components/utils/rateLimiter'; // Correctly import the rateLimiter object
+import { toast } from 'sonner';
 
 // Initial state for the campaign form
 const initialFormState = {
@@ -267,6 +268,15 @@ function CampaignForm({ businessId, onCampaignUpdated, existingCampaign, onCance
 
     if (localFormValues.reward_amount && parseFloat(localFormValues.reward_amount) > 1000) {
       setFormError("Reward amount cannot exceed $1000 per campaign for security reasons.");
+      return;
+    }
+
+    // Budget must cover at least reward_amount × max_participants
+    const rewardVal = parseFloat(localFormValues.reward_amount) || 0;
+    const maxPart = parseInt(localFormValues.max_participants) || 0;
+    const budgetVal = parseFloat(localFormValues.budget) || 0;
+    if (finalStatus === 'active' && rewardVal > 0 && maxPart > 0 && budgetVal > 0 && budgetVal < rewardVal * maxPart) {
+      setFormError(`Budget ($${budgetVal.toFixed(2)}) is less than reward × participants ($${rewardVal.toFixed(2)} × ${maxPart} = $${(rewardVal * maxPart).toFixed(2)}). Increase budget or reduce participants.`);
       return;
     }
 
@@ -1118,7 +1128,7 @@ function CampaignManager() { // Renamed from CampaignManagerContent
       });
 
       if (validatedCampaignsToDelete.length === 0) {
-        alert("No campaigns found to delete that are linked to your business or user account.");
+        toast.success("No campaigns found to delete that are linked to your business or user account.");
         setIsDeletingAll(false);
         return;
       }
@@ -1145,7 +1155,7 @@ function CampaignManager() { // Renamed from CampaignManagerContent
       }
 
       if (successfulDeletions > 0) {
-        alert(`Successfully deleted ${successfulDeletions} campaign(s).${failedDeletions > 0 ? ` ${failedDeletions} deletion(s) failed.` : ''}`);
+        toast.error(`Successfully deleted ${successfulDeletions} campaign(s).${failedDeletions > 0 ? ` ${failedDeletions} deletion(s) failed.` : ''}`);
         rateLimiter.clearCache(); // Use the rateLimiter object
         await refreshCampaigns(true);
       } else {
@@ -1245,12 +1255,12 @@ function CampaignManager() { // Renamed from CampaignManagerContent
         rateLimiter.clearCache(); // Clear cache to ensure fresh data
         await refreshCampaigns(true); // Refresh to show updated budget and user balance
       } else {
-        alert(response.data?.error || 'Failed to increase budget');
+        toast.error(response.data?.error || 'Failed to increase budget');
         setBudgetModal(prev => ({ ...prev, loading: false }));
       }
     } catch (error) {
       console.error('Error increasing budget:', error);
-      alert(error.response?.data?.error || error.message || 'Failed to increase budget');
+      toast.error(error.response?.data?.error || error.message || 'Failed to increase budget');
       setBudgetModal(prev => ({ ...prev, loading: false }));
     }
   };
@@ -1505,7 +1515,7 @@ function CampaignManager() { // Renamed from CampaignManagerContent
                     if (amount > 0) {
                       handleIncreaseBudget(budgetModal.campaign, amount);
                     } else {
-                      alert('Please enter a valid amount');
+                      toast.success('Please enter a valid amount');
                     }
                   }}
                   disabled={budgetModal.loading}

@@ -18,6 +18,7 @@ import {
   Star
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 
 export default function ReferralCard({ user, onUpdate }) {
   const [referralCode, setReferralCode] = useState('');
@@ -76,7 +77,7 @@ export default function ReferralCard({ user, onUpdate }) {
 
   const sendReferralEmail = async () => {
     if (!emailAddress.trim()) {
-      alert('Please enter an email address');
+      toast.success('Please enter an email address');
       return;
     }
 
@@ -111,10 +112,10 @@ The CashLap Team
       });
 
       setEmailAddress('');
-      alert('Referral email sent successfully!');
+      toast.success('Referral email sent successfully!');
     } catch (error) {
       console.error('Error sending email:', error);
-      alert('Failed to send email. Please try again.');
+      toast.error('Failed to send email. Please try again.');
     } finally {
       setIsSendingEmail(false);
     }

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Briefcase, Save, Loader2, TrendingUp } from "lucide-react";
+import { toast } from 'sonner';
 
 export default function BusinessInfoForm({ user, onProfileUpdate }) {
   const [businessProfile, setBusinessProfile] = useState({
@@ -52,12 +53,12 @@ export default function BusinessInfoForm({ user, onProfileUpdate }) {
             await Business.update(businessToUpdate.id, businessDataToUpdate);
         }
         
-        alert("Business profile updated!");
+        toast.success("Business profile updated!");
         if(onProfileUpdate) onProfileUpdate();
 
     } catch (error) {
         console.error("Error updating business profile:", error);
-        alert("Failed to update profile. Please try again.");
+        toast.error("Failed to update profile. Please try again.");
     } finally {
         setSavingBusiness(false);
     }

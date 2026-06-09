@@ -1,4 +1,6 @@
 import './App.css'
+import { Suspense } from 'react'
+import { Loader2 } from 'lucide-react'
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
@@ -55,7 +57,13 @@ const AuthenticatedApp = () => {
           path={`/${path}`}
           element={
             <LayoutWrapper currentPageName={path}>
-              <Page />
+              <Suspense fallback={
+                <div className="flex items-center justify-center min-h-[60vh]">
+                  <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+                </div>
+              }>
+                <Page />
+              </Suspense>
             </LayoutWrapper>
           }
         />
